@@ -1,0 +1,5 @@
+# Python package requirements
+django
+couchdbkit
+couchdb
+celery
