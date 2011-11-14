@@ -1,0 +1,8 @@
+# Python package requirements
+django
+celery
+couchapp
+couchdbkit
+couchdb
+#requests
+-e git://github.com/kennethreitz/requests.git#egg=requests

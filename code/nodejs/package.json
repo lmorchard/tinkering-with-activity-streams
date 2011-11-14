@@ -1,0 +1,20 @@
+{
+    "name": "twas",
+    "version": "0.0.1",
+    "description": "Tinkering with Activity Streams",
+    "author": "Les Orchard <me@lmorchard.com>",
+    "dependencies": {
+        "cradle": "0.5.7",
+        "async": "0.1.15",
+        "bufferjs": "1.0.2",
+        "underscore": "1.2.1",
+        "sax": "0.3.x",
+        "opmlparser": "0.2.0",
+        "optimist": "0.2.8",
+        "winston": "0.5.6",
+        "clog": "0.1.1"
+    },
+    "devDependencies": {
+    },
+    "engine": "node >= 0.4.1"
+}
