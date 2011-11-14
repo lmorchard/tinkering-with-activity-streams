@@ -46,7 +46,7 @@ var Play = ({
                 $this.logger.info(results.length + ' subscriptions fetched.');
                 for (var i=0,result; result=results[i]; i++) {
                     var sub = result.value;
-                    $this.fetch_queue.push(result.value);
+                    $this.fetch_queue.push(sub);
                 }
             });
 
@@ -75,7 +75,7 @@ var Play = ({
             // Check whether this resource was fetched too recently to 
             // fetch again.
             if (!hr.last_error &&
-                    (now - hr.last_fetch_time) < $this.FETCH_MAX_AGE) {
+                    (now - sub.last_fetch_time) < $this.FETCH_MAX_AGE) {
                 // $this.logger.debug("SKIP " + sub.url);
                 return next();
             }
@@ -95,14 +95,14 @@ var Play = ({
             // Prepare the HTTP GET request.
             $this.logger.debug("START " + sub.url);
             var parts = url.parse(sub.url),
+                is_ssl = (parts.protocol == 'https:'),
                 opts = {
                     method: 'GET',
                     host: parts.host,
                     port: parts.port || (is_ssl ? 443 : 80),
-                    path: parts.pathname,
+                    path: parts.path,
                     headers: headers
                 },
-                is_ssl = (parts.protocol == 'https:'),
                 mod = is_ssl ? https : http;
 
             var req = mod.request(opts, function (res) {
@@ -130,7 +130,7 @@ var Play = ({
                         hr.last_error = null;
                         var content = Buffer.concat(chunks);
                         return $this.updateRecords(sub, hr, content, next);
-                   }
+                    }
 
                     // TODO: Handle 3xx redirects.
 
