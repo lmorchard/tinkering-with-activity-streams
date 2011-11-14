@@ -1,5 +1,5 @@
 function(doc) {
     if (doc.doc_type == 'FeedSubscription') {
-        emit(doc._id, doc);
+        emit(doc.profile_id, doc);
     }
 }
