@@ -15,16 +15,32 @@ from twas.utils import opml
 
 from main.models import FeedSubscription, HttpResource
 
-SUBS_VIEW = 'main/FeedSubscription-all'
+PROFILES_BY_USER_NAME_VIEW = 'main/Profile-by-user-name'
+FEEDSUBSCRIPTION_BY_PROFILE_ID_VIEW = 'main/FeedSubscription-by-profile-id'
 FETCH_MAX_AGE = 60 * 60 * 1000 # 1 hour
 
 class Command(BaseCommand):
     help = 'Refresh subscribed feeds'
+    option_list = BaseCommand.option_list + (
+        make_option('-u', '--user',
+            action='store', dest='user_name',
+            default="",
+            help='User name'),
+    )
     can_import_settings = True
 
     def handle(self, *arg, **kwargs):
-        subscriptions = FeedSubscription.view(SUBS_VIEW)
-        for s in subscriptions:
+
+        # Grab the profile for supplied user name
+        p = Profile.view(PROFILES_BY_USER_NAME_VIEW,
+                         key=kwargs['user_name']).first()
+        if not p:
+            raise CommandError('No profile named %s found' %
+                               kwargs['user_name'])
+
+        subs = FeedSubscription.view(FEEDSUBSCRIPTION_BY_PROFILE_ID_VIEW,
+                                     key=p._id).all()
+        for s in subs:
             self.fetchSubscription(s)
 
     def fetchSubscription(self, s):

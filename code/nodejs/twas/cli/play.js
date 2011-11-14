@@ -14,9 +14,12 @@ require('bufferjs/concat');
 var Play = ({
 
     DATABASE_NAME: 'twas',
+    PROFILE_ID: 'Profile:lmorchard',
     QUEUE_CONCURRENCY: 32,
     BUFFER_SIZE: 100 * 1024,
     FETCH_MAX_AGE: 1 * 60 * 60 * 1000,
+    FEEDSUBSCRIPTION_BY_PROFILE_ID_VIEW:
+        'main/FeedSubscription-by-profile-id',
 
     init: function () {
         var $this = this;
@@ -41,7 +44,9 @@ var Play = ({
         );
 
         $this.logger.debug('Fetching subscriptions...');
-        $this.db.view('main/FeedSubscription-all', 
+        $this.db.view(
+            $this.FEEDSUBSCRIPTION_BY_PROFILE_ID_VIEW,
+            {key: $this.PROFILE_ID},
             function (err, results) {
                 $this.logger.info(results.length + ' subscriptions fetched.');
                 for (var i=0,result; result=results[i]; i++) {
