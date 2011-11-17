@@ -1,0 +1,3 @@
+== What are Activity Streams?
+
+// vim: set syntax=asciidoc smartindent formatoptions=tcn textwidth=75:

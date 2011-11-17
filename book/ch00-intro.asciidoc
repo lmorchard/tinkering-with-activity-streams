@@ -1,0 +1,67 @@
+== Introduction
+
+Once upon a time, the World Wide Web was created as a way to share
+scientific research through documents linked together across the Internet.
+But, that was a time when scientists and academics were most of the people
+using the net—so of course sharing research was one of the hottest things
+around. But, as more of the world's people have come online, we've expanded
+the web as a medium through which we can share the broader details and
+events of our lives with each other.
+
+From formal papers, to daily missives, to hourly and even up-to-the minute
+status updates complete with rich multimedia and sensor data—we've moved
+from documents to streams. The pace is quickening, and the expressiveness
+grows.  And it's still looks like a world wide web: the best of it is as
+hyperlinked and interconnected as our thoughts and relationships to each
+other.
+
+*Activity Streams* is a term used to describe these rivers of information
+and experience flowing on the web. And, as you can tell from the title,
+that's topic of this book. More to the point, this is a book that intends
+to help you to explore concepts and technologies that drive *Activity
+Streams* and experiment with them in practical and interesting ways.
+
+=== Who is this book for? ===
+
+This is not a basic programming book. You should already be comfortable
+with editing source files and building applications in at least one or more
+languages—particularly JavaScript and/or Python. You'll also be helped by
+having at least a basic grasp of web technologies such as HTTP, HTML, XML,
+and JSON.
+
+That said, efforts will be made to explain the essentials and the most
+significant parts of the technologies used throughout the book. You'll also
+find pointers to more information and further experiments to explore.
+
+This will also be a very Unix-centric book in its examples. In other words,
+if you are most comfortable in a Windows environment, you might find some
+parts more difficult to follow than if you were a Linux or Mac OS X
+user.
+
+And, finally, it will be helpful to have some form of web hosting
+available. For the most part, this book won't require anything like an
+expensive dedicated or co-located server. But, occasionally, a server out
+on the public Internet will come in handy. In most cases, the examples
+herein should be usable with inexpensive—or even free—services, and
+alternatives will be offered where appropriate.
+
+=== What's in this book? ===
+
+TBD
+
+=== How's this book structured? ===
+
+TBD
+
+=== Conventions used in this book ===
+
+TBD
+
+=== Source Code ===
+
+Both the source code for this book and all the example programs are
+available here:
+
+    http://github.com/lmorchard/tinkering-with-activity-streams/
+
+// vim: set syntax=asciidoc smartindent formatoptions=tcn textwidth=75:
