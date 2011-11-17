@@ -1,3 +1,44 @@
-== What are Activity Streams?
+== What are Activity Streams? ==
+
+Consider that Activity Streams are a rather recent development on the Web.
+HTML documents were the original hotness, drafted by
+"http://www.w3.org/People/Berners-Lee/1991/08/art-6484.txt[high energy
+physicists to share data, news, and documentation]". But, soon, a
+broader population of random academics and friends became webmasters and
+webmistresses. They transformed their
+http://catb.org/jargon/html/P/plan-file.html[.plan files] into home pages
+and discovered animated GIFs for the first time.
+
+Eventually, the patterns of frequently updated pages
+http://oldweblogscomblog.scripting.com/historyofweblogs[evolved into the
+weblog]—or "blog" for short. The blog format consists typically of pages
+with changes listed in reverse-chronological order—so the new stuff always
+shows up at the top of the page. Early blogs served as news desks, shared
+pointers to cool stuff, or even as personal journals open to the public.
+
+Though handcrafted at first, blogs soon benefited from a growing collection
+of software to manage publishing on the web. As software took over the
+basic tasks, the complexity could grow. In fact, back in the early
+2000's, some of http://www.xmlrpc.com/metaWeblogApi[the first web service
+APIs] were created to support publishing blog posts from desktop editors
+and other tools.
+
+Along with APIs for publishing,
+http://en.wikipedia.org/wiki/RSS#History[XML syndication feeds began to
+take off] for distributing and consuming content. Whereas HTML pages were
+mainly intended for human consumption by way of a browser, syndication
+feeds wrapped web content in more machine-friendly structures. Allowing
+machines to more easily process web content allowed the creation of web
+portals and personal news readers—automated software capable of pulling
+together content from many other sites on the web and presenting that
+content in new and interesting and more convenient ways.
+
+Syndication feeds—http://en.wikipedia.org/wiki/RSS[using the RSS format],
+in particular—consist mainly of:
+
+    * a parent document describing the site to which the feed belongs;
+    * a collection of child items describing pieces of content provided by the site. 
+
+
 
 // vim: set syntax=asciidoc smartindent formatoptions=tcn textwidth=75:
