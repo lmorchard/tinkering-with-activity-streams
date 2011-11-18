@@ -63,7 +63,22 @@ TBD
 
 === Conventions used in this book ===
 
-TBD
+Throughout of this book, you'll see the icons like the following alongside
+highlighted text to draw your attention to various important things:
+
+[TIP]
+An interesting trick or pointer toward further information.
+
+[NOTE]
+A clarification of a point recently made.
+
+[IMPORTANT]
+Information worth paying extra attention.
+
+[WARNING]
+Gotchas and potential pitfalls.
+
+// TODO: More conventions? For code? Is this really necessary?
 
 === Source Code ===
 

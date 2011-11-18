@@ -1,44 +1,208 @@
 == What are Activity Streams? ==
 
 Consider that Activity Streams are a rather recent development on the Web.
-HTML documents were the original hotness, drafted by
-"http://www.w3.org/People/Berners-Lee/1991/08/art-6484.txt[high energy
-physicists to share data, news, and documentation]". But, soon, a
+It might be illustrative to take a quick stroll down memory lane and peek
+at what came before.
+
+=== From documents to feeds ===
+
+:u_highenergy: http://www.w3.org/People/Berners-Lee/1991/08/art-6484.txt
+:u_planfile: http://catb.org/jargon/html/P/plan-file.html
+
+HTML documents were the original hotness, drafted by "{u_highenergy}[high
+energy physicists to share data, news, and documentation]". But, soon, a
 broader population of random academics and friends became webmasters and
-webmistresses. They transformed their
-http://catb.org/jargon/html/P/plan-file.html[.plan files] into home pages
-and discovered animated GIFs for the first time.
+webmistresses. They transformed their {u_planfile}[.plan files] into home
+pages and discovered animated GIFs for the first time.
+
+// TODO: Figure? Early web sites?
+
+:u_blog_history: http://oldweblogscomblog.scripting.com/historyofweblogs 
 
 Eventually, the patterns of frequently updated pages
-http://oldweblogscomblog.scripting.com/historyofweblogs[evolved into the
-weblog]—or "blog" for short. The blog format consists typically of pages
-with changes listed in reverse-chronological order—so the new stuff always
-shows up at the top of the page. Early blogs served as news desks, shared
-pointers to cool stuff, or even as personal journals open to the public.
+{u_blog_history}[evolved into the weblog]—or "blog" for short. The blog
+format consists typically of pages with changes listed in
+reverse-chronological order—so the new stuff always shows up at the top of
+the page. Early blogs served as news desks, shared pointers to cool stuff,
+or even as personal journals open to the public.
 
-Though handcrafted at first, blogs soon benefited from a growing collection
-of software to manage publishing on the web. As software took over the
-basic tasks, the complexity could grow. In fact, back in the early
-2000's, some of http://www.xmlrpc.com/metaWeblogApi[the first web service
-APIs] were created to support publishing blog posts from desktop editors
-and other tools.
+// TODO: Figure? Early blog?
 
-Along with APIs for publishing,
-http://en.wikipedia.org/wiki/RSS#History[XML syndication feeds began to
-take off] for distributing and consuming content. Whereas HTML pages were
-mainly intended for human consumption by way of a browser, syndication
-feeds wrapped web content in more machine-friendly structures. Allowing
-machines to more easily process web content allowed the creation of web
-portals and personal news readers—automated software capable of pulling
-together content from many other sites on the web and presenting that
-content in new and interesting and more convenient ways.
+:u_radio: http://radio.userland.com/
+:u_movabletype: http://www.movabletype.org/
+:u_marsedit: http://www.red-sweater.com/marsedit/
+:u_wordpress: http://wordpress.org/
+:u_livejournal_api: http://www.livejournal.com/doc/server/ljp.csp.xml-rpc.protocol.html
+:u_metaweblog_api: http://www.xmlrpc.com/metaWeblogApi
 
-Syndication feeds—http://en.wikipedia.org/wiki/RSS[using the RSS format],
-in particular—consist mainly of:
+Though handcrafted at first, blogs soon benefited from a {u_radio}[growing
+category] of {u_movabletype}[software built] to {u_wordpress}[manage
+publishing] on the web. As software took over the basic tasks, the
+complexity could grow. In fact, back in the early 2000's, some of
+{u_livejournal_api}[the first web service APIs] were created
+{u_metaweblog_api}[to support publishing blog posts] from
+{u_marsedit}[desktop editors] and other tools.
 
-    * a parent document describing the site to which the feed belongs;
-    * a collection of child items describing pieces of content provided by the site. 
+// TODO: Figure? Early desktop blog editor?
+
+:u_portals: http://en.wikipedia.org/wiki/Web_portal
+:u_news_readers: http://netnewswireapp.com/
+:u_rss_history: http://en.wikipedia.org/wiki/RSS#History
+
+Along with APIs for publishing, {u_rss_history}[XML syndication feeds began
+to take off] for distributing and consuming content. Whereas HTML pages
+were mainly intended for human consumption by way of a browser, syndication
+feeds wrapped web content in machine-friendly structures. Allowing machines
+to more easily process web content allowed the creation of {u_portals}[web
+portals] and {u_news_readers}[personal news readers]—automated web surfers
+capable of pulling together content from many other sites on the web and
+presenting that content in new and interesting and more convenient ways.
+
+// TODO: Figure? My Netscape, Radio Userland, NetNewsWire?
+
+=== Feeds are blogs for automated surfers ===
+
+Syndication feeds are XML documents that consist mainly of the following:
+
+    * a parent document describing the site to which the feed belongs; and
+    * a collection of items describing pieces of content provided by the site. 
+
+The individual items themselves generally offer the following fields:
+
+`date`:: Publication date of the feed or item
+`title`:: Short title, generally a single sentence or less
+`description`:: Longer description consisting of paragraphs or a fragment
+    of HTML content
+`link`:: The URL where content described by the feed or item can be found
+
+// TODO: Sketch out data structure of RSS & Atom
+
+:u_rss: http://cyber.law.harvard.edu/rss/rss.html
+:u_atom: http://www.ietf.org/rfc/rfc4287.txt
+
+This is a simplified version of the story, which ignores many fields
+defined for feeds and items in {u_rss}[RSS]. It also doesn't even mention
+the alternate feed format called {u_atom}[Atom (a.k.a. RFC 4287]). But,
+from this you can get a general idea of the data model behind feeds.
+
+:u_hacking_feeds: http://www.amazon.com/gp/product/0764597582?ie=UTF8&tag=0xdecafbad01-20&linkCode=as2&camp=1789&c%0D%0Areative=9325&creativeASIN=0764597582
+:u_wiley: http://www.wiley.com/WileyCDA/WileyTitle/productCd-0764597582.html
+
+[TIP]
+Cheap plug ahead: If you're interested in reading more in-depth about
+syndication feeds, then look for my first book: {u_hacking_feeds}[Hacking
+RSS and Atom], published in 2005 by {u_wiley}[Wiley]. In a sense, this book
+is that one's spiritual successor.
+
+So: date, title, description, and link—these are the basic components from
+an item found in an RSS or Atom feed. If you think about it, this schema
+closely mirrors the shape of blogs. And, just like blogs, they generally
+contain items in reverse-chronological order—so the new stuff shows up at
+the top. In other words, feeds are blogs for bots.
+
+But, what kind of bots read syndication feeds? As hinted at earlier:
+{u_portals}[Portals] and {u_news_readers}[news readers].
+
+Imagine, if you will: In the days before feeds, we relied on browser
+bookmarks to make daily rounds to popular news sites and blogs.  But, with
+the availability of feeds, software could make those daily rounds for
+us—that is, feeds from the sites we used to visit in person got fetched
+periodically throughout the day, and their content was assembled into a
+single combined display. Automated surfing, the ultimate in information
+addiction convenience!
+
+=== From high energy physicists to blogosphere techies ===
+
+:u_blog_glossary: http://en.wikipedia.org/wiki/Glossary_of_blogging
+:u_blog_chat: http://www.blogchat.com/
+:u_mybloglog: http://en.wikipedia.org/wiki/MyBlogLog
+:u_blogosphere: http://en.wikipedia.org/wiki/Blogosphere
+:u_referer: http://en.wikipedia.org/wiki/HTTP_referrer#Origin_of_the_term_referer
+:u_trackback: http://en.wikipedia.org/wiki/Trackback
+:u_pingback: http://en.wikipedia.org/wiki/Pingback
+:u_livejournal: http://livejournal.com/
+
+So, physics papers and homepages evolved into blogs. And blogs, in turn,
+found themselves pressed into publishing global news, link collections,
+personal journals, photo galleries, and even audiobooks in podcast form.
+
+Blogs also sprouted sophisticated feedback mechanisms and interconnections:
+Comment threads appeared paired with entries. {u_referer}[Referers] (sic),
+{u_trackback}[trackbacks], and {u_pingback}[pingbacks] were used to
+automatically form links between entries posted on different sites. Sidebar
+widgets offered links to other blogs (see also:
+"{u_blog_glossary}[blogroll]"), opened up {u_blog_chat}[live chat rooms],
+and presented {u_mybloglog}[readership rosters]. The network established
+between blogs—known as {u_blogosphere}[the blogosphere]—formed a powerful
+and lively social space with plenty of subdivisions and activity. 
+
+But, the thing is, this social network grew almost entirely _in spite of_
+the technologies involved. That is to say, people signed up for web hosting
+and learned how to configure blogs in anticipation of promised
+expressiveness and community. Blogs presented a technical challenge that
+filtered out all but the most adventurous—for the most part, the
+Blogosphere has been an exclusive community, weighted heavily with techies.
+
+=== The social web beyond blogs ===
+
+:u_web20: http://en.wikipedia.org/wiki/Web_2.0
+
+That's not to say that people didn't work to address that exclusivity,
+though. Throughout the later half of the 2000's, a fresh wave of web
+startups began that was referred to by many as "{u_web20}[Web 2.0]".
+Though there were many fresh ideas, quite a number of new sites and
+services picked up leads from the Blogosphere. 
+
+:u_flickr: http://flickr.com
+:u_delicious: http://del.icio.us
+:u_twitter: http://twitter.com
+:u_youtube: http://youtube.com
+:u_facebook: http://facebook.com
+:u_thesocialnetwork: http://www.imdb.com/title/tt1285016/
+:u_digg: http://www.digg.com/
+
+Rather than set up a photo gallery theme on a blog, you could sign up for
+{u_flickr}[Flickr]. Instead of posting bullet-pointed lists of interesting
+links, you could share your bookmarks on {u_delicious}[del.icio.us]. Videos
+could be easily uploaded, processed, and viewed via {u_youtube}[YouTube].
+{u_digg}[Digg] helped us share and amplify the news of the day. Short
+missives, or asides, were easily absorbed by {u_twitter}[Twitter]. There's
+even been {u_thesocialnetwork}[a movie made] about the much more
+inclusive—yet paradoxically more contained—cousin to the Blogosphere
+offered by {u_facebook}[Facebook].
+
+In many cases, this new generation of social media sites refined the ideas
+prototyped on blogs. But, rather than require the purchase of web hosting,
+most opted for ad-supported business models and free registration. Along
+with sponsored hosting, a focus on usability got the technology out of the
+way and trumped the need for social humans to learn an alphabet soup of
+arcanities like HTTP, FTP, PHP, and SQL.
+
+=== From blogs and feeds to what? ===
+
+Recall that feeds and blogs closely mirror each others' structures. As it
+happens, those structures are simple and largely free-form: You can shove
+almost anything into the `description` field of a feed item, while `title`
+and `link` are handy for describing just about any page on the web.
+
+But, the social media sites of Web 2.0 refined many of the purposes and
+patterns first pioneered in blogs. Along with those refinements came more
+interesting—and more textured—data. And even though that data could find
+rough expression in the form of existing HTML and feed formats, more
+precise representations can open up new applications and opportunities.
+
+Remember how feeds were earlier described as blogs for bots? And remember
+how those bots can serve as automated surfers, augmenting our abilities to
+gather news from across the web?
+
+Well, imagine the kind of data can be extracted from the structures that
+have emerged from refined social media. And, once we have that structured
+data in machine-friendly form, consider what kind of bots we can build from
+there. (As it happens, that's what this book is all about—so don't think
+_too_ hard about it yet, or you'll spoil the ending!)
 
 
+
+// TODO: Describe the data model of an ActivityStream
 
 // vim: set syntax=asciidoc smartindent formatoptions=tcn textwidth=75:
