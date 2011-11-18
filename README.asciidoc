@@ -14,6 +14,11 @@ submitting errata and providing translations can be found at that site.
 * https://github.com/schacon/git-scribe
 * https://github.com/jasonm/guard-git-scribe
 
+## Building the single HTML page
+
+    $ cd book
+    $ asciidoc -a icons -a data-uri -o ../output/book.html book.asc
+
 ## Working on the book
 
     $ bundle install
