@@ -7,7 +7,7 @@ var AWS_KEY_ID = localStorage.getItem('AWS_KEY_ID'),
 
 asyncTest("Exercise S3 backbone", function () {
 
-    Backbone.sync = (new S3Sync({
+    var sync = (new S3Sync({
         key_id: AWS_KEY_ID,
         secret_key: AWS_SECRET_KEY,
         bucket: 'twas',
@@ -15,13 +15,17 @@ asyncTest("Exercise S3 backbone", function () {
         debug: true
     })).bind();
 
-    var activities = new ActivityCollection({
-    });
+    // Backbone.sync = sync;
+    Activity.prototype.sync = sync;
+    ActivityCollection.prototype.sync = sync;
+
+    var activities = new ActivityCollection();
 
     var a1, a2, a1_read, a2_read;
 
     async.waterfall([
         function (next) {
+            // Create an activity with ActivityCollection.create
             a1 = activities.create({
                 actor: { displayName: 'John Doe' },
                 object: { url: 'http://example.org/alpha' },
@@ -30,6 +34,7 @@ asyncTest("Exercise S3 backbone", function () {
                 error: function (c, r) { next('ERROR'); }
             });
         }, function (next) {
+            // Create a new Activity and save it.
             a2 = new Activity({
                 actor: { displayName: 'Jane Smith' },
                 object: { url: 'http://example.org/beta' },
@@ -41,25 +46,29 @@ asyncTest("Exercise S3 backbone", function () {
                 error: function (c, r) { next('ERROR'); }
             });
         }, function (next) {
+            // Try fetching the first activity.
             var activities2 = new ActivityCollection();
             activities2.fetch({
                 success: function (coll, recs) {
                     a1_read = activities2.get(a1.id);
-                    equal(a1.get('published'), a1_read.get('published'));
-                    equal(a1.get('actor').displayName, a1_read.get('actor').displayName);
+                    equal(a1.get('published'), 
+                          a1_read.get('published'));
+                    equal(a1.get('actor').displayName, 
+                          a1_read.get('actor').displayName);
                     next();
                 },
                 error: function (c, r) { next('ERROR'); }
             });
         }, function (next) {
+            // Destroy the first activity.
             a1_read.destroy({
                 success: function (m, r) { next(); },
                 error: function (c, r) { next('ERROR'); }
             }); 
         }, function (next) {
+            // Ensure the first activity is no longer accessible.
             (new ActivityCollection()).fetch({
                 success: function (coll, recs) {
-                    console.log("WARGLE");
                     a1_read2 = coll.get(a1.id);
                     ok(!a1_read2, "Should not have found the object");
                     next();
@@ -67,23 +76,28 @@ asyncTest("Exercise S3 backbone", function () {
                 error: function (c, r) { next('ERROR'); }
             });
         }, function (next) {
+            // Try fetching the second activity.
             a2_read = new Activity(
                 { id: a2.id }, 
                 { collection: activities }
             );
             a2_read.fetch({
                 success: function (coll, recs) {
-                    equal(a2.get('published'), a2_read.get('published'));
-                    equal(a2.get('actor').displayName, a2_read.get('actor').displayName);
+                    equal(a2.get('published'), 
+                          a2_read.get('published'));
+                    equal(a2.get('actor').displayName,
+                          a2_read.get('actor').displayName);
                     next();
                 },
-                error: function (c, r) { console.log("FUCKSTICK"); next('ERROR'); }
+                error: function (c, r) { next('ERROR'); }
             });
         }, function (next) {
+            // Finally, delete the secont activity, but we won't bother
+            // verifying it's gone.
             a2_read.destroy({
                 success: function (m, r) { next(); },
                 error: function (c, r) { next('ERROR'); }
-            }); 
+            });
         }
     ], function (err) {
         if (err) { ok(false, err); }
@@ -118,24 +132,18 @@ asyncTest("Exercise S3Ajax", function () {
                 }
                 ok(found_it, "Should have found the written key");
                 next();
-            }, function (req, obj) {
-                next('ERROR');
-            });
+            }, function (req, obj) { next('ERROR'); });
         }, function (next) {
             s3.get(test_bucket, test_key, function (req, obj) {
                 var result_content = req.responseText;
                 equal(result_content, test_content,
                     "Content fetched from S3 should match expected");
                 next();
-            }, function (req, obj) {
-                next('ERROR');
-            });
+            }, function (req, obj) { next('ERROR'); });
         }, function (next) {
             s3.deleteKey(test_bucket, test_key, function (req, obj) {
                 next();
-            }, function (req, obj) {
-                next('ERROR');
-            });
+            }, function (req, obj) { next('ERROR'); });
         }, function (next) {
             s3.get(test_bucket, test_key, function (req, obj) {
                 ok(false, "Should not have found the content");

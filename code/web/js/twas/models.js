@@ -5,7 +5,7 @@ var Activity = Backbone.Model.extend({
 
     defaults: {
         published: '',
-        actor: '',
+        actor: {},
         verb: 'post',
         object: {},
         target: null
@@ -51,5 +51,8 @@ var Activity = Backbone.Model.extend({
 
 var ActivityCollection = Backbone.Collection.extend({
     url: 'activities',
-    model: Activity
+    model: Activity,
+    comparator: function (activity) {
+        return activity.get('published');
+    }
 });
