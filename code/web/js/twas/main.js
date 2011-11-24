@@ -10,7 +10,7 @@ var TWAS_main = {
         var $this = this;
         $(document).ready(function () {
             $this.installSync();
-            $this.app_view = new TWAS_AppView({
+            $this.app_view = new TWAS_Views_App({
                 activities: $this.activities
             });
         });
@@ -32,6 +32,7 @@ var TWAS_main = {
 
         if (!this.activities) {
             this.activities = new ActivityCollection();
+            window.activities = this.activities;
         }
         this.activities.sync = this.sync;
 

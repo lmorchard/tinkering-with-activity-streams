@@ -27,7 +27,7 @@ var Activity = Backbone.Model.extend({
     _pad: function (n) { return n<10 ? '0'+n : n },
 
     url: function() {
-        var base = this.collection.url;
+        var base = this.collection.url();
         if (this.isNew()) return base;
         var parts = this.id.split('-'),
             d = new Date(parseInt(parts[0])),
@@ -50,9 +50,15 @@ var Activity = Backbone.Model.extend({
 });
 
 var ActivityCollection = Backbone.Collection.extend({
-    url: 'activities',
     model: Activity,
     comparator: function (activity) {
         return activity.get('published');
+    },
+    url: function () {
+        var u = 'activities';
+        if (this.sync.instance && this.sync.instance.prefix) {
+            u = this.sync.instance.prefix + u;
+        }
+        return u;
     }
 });

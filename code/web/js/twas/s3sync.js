@@ -62,7 +62,7 @@ S3Sync.prototype = {
     // Handle a sync read for a model.
     sync_readModel: function (model, options) {
         var $this = this,
-            key = this.prefix + model.url();
+            key = model.url();
         this.s3.get(
             this.bucket, key,
             function (resp, obj) {
@@ -112,7 +112,7 @@ S3Sync.prototype = {
     sync_create: function (model, options) {
         var data = model.toJSON(),
             content = JSON.stringify(data),
-            key = this.prefix + model.url();
+            key = model.url();
         this.s3.put(
             this.bucket, key, content, 
             { content_type: 'application/json; charset=UTF-8' }, 
@@ -124,7 +124,7 @@ S3Sync.prototype = {
     sync_update: function (model, options) {
         var data = model.toJSON(),
             content = JSON.stringify(data),
-            key = this.prefix + model.url();
+            key = model.url();
         this.s3.put(
             this.bucket, key, content, 
             { content_type: 'application/json; charset=UTF-8' }, 
@@ -134,7 +134,7 @@ S3Sync.prototype = {
     },
 
     sync_delete: function (model, options) {
-        var key = this.prefix + model.url();
+        var key = model.url();
         this.s3.deleteKey(
             this.bucket, key,
             function (req, obj) { options.success(model, req); }, 
