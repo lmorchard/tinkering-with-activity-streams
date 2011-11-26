@@ -21,12 +21,7 @@ S3Sync.prototype = {
     init: function (options) {
         this.options = options;
         this.s3 = new S3Ajax(options);
-        for (var k in this.defaults) {
-            if (this.defaults.hasOwnProperty(k)) {
-                this[k] = (typeof(options[k]) !== 'undefined') ?
-                    options[k] : this.defaults[k];
-            }
-        }
+        _.extend(this, this.defaults, options);
         return this;
     },
 
@@ -47,7 +42,12 @@ S3Sync.prototype = {
 
     // Parse the JSON from an HTTP response.
     _parseResp: function (resp) {
-        return JSON.parse(resp.responseText);
+        try {
+            return JSON.parse(resp.responseText);
+        } catch (e) {
+            if (!_.isUndefined(console.error)) { console.error(e); }
+            return null;
+        }
     },
 
     // Handle a sync read, for collection or model.
@@ -76,17 +76,31 @@ S3Sync.prototype = {
     // TODO: Accept more filtering parameters
     sync_readCollection: function (collection, options) {
         var $this = this,
-            sub_prefix = options.prefix || '';
+            sub_prefix = options.prefix || '',
+            limit = options.limit || 1000;
 
         // List the keys for the collection's prefix...
         this.s3.listKeys(
             this.bucket, {prefix: this.prefix + sub_prefix},
             function (req, obj) {
 
-                // Collect keys into an async processing queue....
+                // Get the bucket items, index by Key
                 var items = obj.ListBucketResult.Contents,
-                    objs = [];
+                    indexed = _.groupBy(items, function (i) {
+                        return i.Key;
+                    }),
+                    keys = _.keys(indexed);
 
+                // Reverse-sort the keys.
+                keys.sort(function (a, b) {
+                    return a.localeCompare(b);
+                });
+
+                // Enforce a result count limit, if necessary.
+                keys = keys.slice(0, limit-1);
+
+                // Collect keys into an async processing queue....
+                var objs = [];
                 var q = async.queue(function (item, done) {
                     // Each key is processed with a simple fetch.
                     $this.s3.get(
@@ -99,10 +113,14 @@ S3Sync.prototype = {
                 }, $this.fetch_concurrency);
 
                 // When the queue is drained, success is ours.
-                q.drain = function () { options.success(objs); };
+                q.drain = function () {
+                    options.success(objs);
+                };
 
                 // Finally, load the queue up with the listed items.
-                _.each(items, function (item) { q.push(item); });
+                _.each(keys, function (key) { 
+                    q.push(indexed[key][0]);
+                });
 
             },
             function (req) { options.error(req); }

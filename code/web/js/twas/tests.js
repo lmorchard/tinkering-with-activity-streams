@@ -1,7 +1,7 @@
 var AWS_KEY_ID = localStorage.getItem('AWS_KEY_ID'),
     AWS_SECRET_KEY = localStorage.getItem('AWS_SECRET_KEY'),
     test_bucket = 'twas',
-    test_prefix = 'content/tests/',
+    test_prefix = 'test-data/',
     test_key = test_prefix + 'foobar',
     test_content = 'TEST CONTENT';
 

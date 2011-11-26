@@ -7,8 +7,7 @@ var Activity = Backbone.Model.extend({
         published: '',
         actor: {},
         verb: 'post',
-        object: {},
-        target: null
+        object: {}
     },
 
     initialize: function (attributes, options) {
@@ -24,6 +23,11 @@ var Activity = Backbone.Model.extend({
         }
     },
 
+    // Get the cloned value of an attribute.
+    get : function(attr) {
+        return _.clone(this.attributes[attr]);
+    },
+
     _pad: function (n) { return n<10 ? '0'+n : n },
 
     url: function() {
@@ -34,7 +38,7 @@ var Activity = Backbone.Model.extend({
             path = d.getUTCFullYear() + '/'
                 + this._pad(d.getUTCMonth()+1) + '/'
                 + this._pad(d.getUTCDate());
-        return base + '/' + path + '/' + encodeURIComponent(this.id);
+        return base + path + '/' + encodeURIComponent(this.id);
     },
     
     isodt: function (d) {
@@ -55,7 +59,7 @@ var ActivityCollection = Backbone.Collection.extend({
         return activity.get('published');
     },
     url: function () {
-        var u = 'activities';
+        var u = '';
         if (this.sync.instance && this.sync.instance.prefix) {
             u = this.sync.instance.prefix + u;
         }

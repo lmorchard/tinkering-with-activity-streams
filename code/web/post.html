@@ -1,11 +1,8 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>TWAS post</title>
-        <style type="text/css">
-            #activity { width: 33%; float: left; margin: 0.25em 0.5em; }
-            #activities { margin: 0.25em 0.5em 0.25em 34%; padding: 0.125em 0.25em; border: 1px solid #ddd; }
-        </style>
+        <title>Activity Stream Publisher</title>
+        <link href="css/main.css" rel="stylesheet" type="text/css" />
     </head>
     <body id="post-app">
 
@@ -68,10 +65,23 @@
         </form>
 
         <section id="activities">
-            <h2>Activities</h2>
             <ul class="stream">
             </ul>
         </section>
+
+        <ul class="templates">
+            <li id="activity-template" class="activity">
+                <span class="published"></span>
+                <div class="object">
+                    <a class="displayName" href="">name</a>
+                    <p class="content"></p>
+                </div>
+                <span class="buttons">
+                    <button class="delete">Delete</button>
+                    <button class="edit">Edit</button>
+                </span>
+            </li>
+        </ul>
 
         <script src="js/jquery.js" type="text/javascript"></script>
         <script src="js/async.js" type="text/javascript"></script>
@@ -81,8 +91,10 @@
         <script src="js/S3Ajax.js" type="text/javascript"></script>
 
         <script src="js/twas/s3sync.js" type="text/javascript"></script>
+
         <script src="js/twas/models.js" type="text/javascript"></script>
         <script src="js/twas/views.js" type="text/javascript"></script>
+        <script src="js/twas/feeds.js" type="text/javascript"></script>
         <script src="js/twas/main.js" type="text/javascript"></script>
 
     </body>

@@ -39,10 +39,25 @@ var TWAS_Views_ActivityForm = Backbone.View.extend({
     alert: function(msg) {
         console.log("ACHTUNG! " + msg);
     },
+
+    editActivity: function (a) {
+        this.activity = a;
+        
+        var actor = a.get('actor');
+        this.$('#actor_url').val(actor.url);
+        this.$('#actor_displayName').val(actor.displayName);
+        
+        this.$('#verb').val(a.get('verb'));
+
+        var object = a.get('object');
+        this.$('#object_type').val(object.type);
+        this.$('#object_displayName').val(object.displayName);
+        this.$('#object_content').val(object.content);
+    },
     
     commit: function () {
         var $this = this;
-        var new_post = this.activities.create({
+        var data = {
             actor: {
                 url: this.$('#actor_url').val(),
                 displayName: this.$('#actor_displayName').val()
@@ -53,19 +68,33 @@ var TWAS_Views_ActivityForm = Backbone.View.extend({
                 displayName: this.$('#object_displayName').val(),
                 content: this.$('#object_content').val()
             }
-        },{
+        };
+        var options = {
             success: function (o, r) {
-                $this.alert("Activity posted");
+                $this.alert("Activity saved");
                 $this.reset();
             },
             error: function (o, r) {
                 $this.alert("Error posting activity");
             }
-        });
+        };
+        if (!this.activity) {
+            this.activities.create(data, options);
+        } else {
+            this.activity.save(data, options);
+        }
         return false;
     },
 
     reset: function () {
+        this.activity = null;
+        this.$('#actor_url').val('');
+        this.$('#actor_displayName').val('');
+        this.$('#verb').val('');
+        this.$('#object_type').val('');
+        this.$('#object_displayName').val('');
+        this.$('#object_content').val('');
+        return false;
     }
 
 });
@@ -88,7 +117,7 @@ var TWAS_Views_ActivitiesSection = Backbone.View.extend({
                 _($this['activities_'+name]).bind($this));
         });
 
-        this.activities.fetch();
+        this.activities.fetch({ limit: 15 });
     },
 
     clearActivities: function () {
@@ -124,14 +153,6 @@ var TWAS_Views_ActivitiesSection = Backbone.View.extend({
 var TWAS_Views_Activity = Backbone.View.extend({
     tagName: 'li',
 
-    template: _.template([
-        '<li id="activity-<%=id%>" class="activity">',
-            '<button class="delete">Delete</button>',
-            '<button class="edit">Edit</button>',
-            '<a href="<%=url%>"><%=object.displayName%></a>',
-        '</li>'
-    ].join('')),
-
     events: {
         'click .edit': 'edit',
         'click .delete': 'destroy'
@@ -148,7 +169,7 @@ var TWAS_Views_Activity = Backbone.View.extend({
     },
 
     make: function () {
-        this.el = $('<'+this.tagName+'/>');
+        this.el = $('#activity-template').clone();
         this.el.data('view', this);
         this.render();
         this.delegateEvents();
@@ -156,28 +177,46 @@ var TWAS_Views_Activity = Backbone.View.extend({
     },
 
     render: function () {
-        if (!this.activity) { return; }
-        var data = this.activity.toJSON();
-        data.url = this.activity.url();
+        var a = this.activity;
+        if (!a) { return; }
 
-        var ct = this.template(data);
-        $(this.el).html(ct);
+        this.el.attr('id', 'activity-' + a.get('id'));
+        this.$('.published').text(a.get('published'));
+
+        var o = a.get('object');
+        this.$('.object')
+            .find('.displayName')
+                .attr('href', a.url())
+                .text(o.displayName)
+            .end()
+            .find('.content')
+                .html(o.content)
+            .end();
+
         return this;
     },
 
-    activity_all: function (ev_name) {
-        console.log("ACT EV", arguments);
-    },
-    activity_change: function (activity) { this.render(); },
-    activity_remove: function (activity) { this.el.remove(); },
-
     edit: function () {
+        var form = this.parent.appview.activity_form;
+        form.editActivity(this.activity);
         return false;
     },
 
     destroy: function () {
         this.activity.destroy();
         return false;
+    },
+
+    activity_all: function (ev_name) {
+        console.log("ACT EV", arguments);
+    },
+
+    activity_change: function (activity) {
+        this.render();
+    },
+
+    activity_remove: function (activity) { 
+        this.el.remove();
     }
 
 });
