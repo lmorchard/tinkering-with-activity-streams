@@ -28,7 +28,7 @@ var TWAS_Views_ActivityForm = Backbone.View.extend({
     events: {
         'submit': 'commit',
         'click button.post': 'commit',
-        'click button.reset': 'reset',
+        'click button.reset': 'reset'
     },
     
     initialize: function (options) {
@@ -133,7 +133,7 @@ var TWAS_Views_ActivitiesSection = Backbone.View.extend({
     },
 
     activities_all: function (ev_name) {
-        console.log("LIST EVENT", arguments);
+        // console.log("LIST EVENT", arguments);
     },
 
     activities_add: function (activity) {
@@ -208,7 +208,7 @@ var TWAS_Views_Activity = Backbone.View.extend({
     },
 
     activity_all: function (ev_name) {
-        console.log("ACT EV", arguments);
+        // console.log("ACT EV", arguments);
     },
 
     activity_change: function (activity) {

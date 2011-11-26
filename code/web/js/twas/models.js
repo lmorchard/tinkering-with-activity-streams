@@ -18,7 +18,7 @@ var Activity = Backbone.Model.extend({
             var id = '' +
                 (new Date()).getTime() + 
                 '-' + 
-                parseInt(Math.random()*1000);
+                parseInt(Math.random()*1000, 10);
             this.set({id: id});
         }
     },
@@ -28,27 +28,31 @@ var Activity = Backbone.Model.extend({
         return _.clone(this.attributes[attr]);
     },
 
-    _pad: function (n) { return n<10 ? '0'+n : n },
+    _pad: function (n) { return n<10 ? '0'+n : n; },
 
     url: function() {
         var base = this.collection.url();
         if (this.isNew()) return base;
         var parts = this.id.split('-'),
-            d = new Date(parseInt(parts[0])),
-            path = d.getUTCFullYear() + '/'
-                + this._pad(d.getUTCMonth()+1) + '/'
-                + this._pad(d.getUTCDate());
+            d = new Date(parseInt(parts[0], 10)),
+            path = [
+                d.getUTCFullYear(), '/',
+                this._pad(d.getUTCMonth()+1), '/',
+                this._pad(d.getUTCDate())
+            ].join('');
         return base + path + '/' + encodeURIComponent(this.id);
     },
     
     isodt: function (d) {
         if (!d) { d = new Date(); }
-        return d.getUTCFullYear()+'-'
-            + this._pad(d.getUTCMonth()+1)+'-'
-            + this._pad(d.getUTCDate())+'T'
-            + this._pad(d.getUTCHours())+':'
-            + this._pad(d.getUTCMinutes())+':'
-            + this._pad(d.getUTCSeconds())+'Z';
+        return [
+            d.getUTCFullYear(), '-',
+            this._pad(d.getUTCMonth()+1), '-',
+            this._pad(d.getUTCDate()), 'T',
+            this._pad(d.getUTCHours()), ':',
+            this._pad(d.getUTCMinutes()), ':',
+            this._pad(d.getUTCSeconds()), 'Z'
+        ].join('');
     }
 
 });

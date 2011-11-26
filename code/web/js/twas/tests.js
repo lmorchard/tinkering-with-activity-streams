@@ -28,7 +28,7 @@ asyncTest("Exercise S3 backbone", function () {
             // Create an activity with ActivityCollection.create
             a1 = activities.create({
                 actor: { displayName: 'John Doe' },
-                object: { url: 'http://example.org/alpha' },
+                object: { url: 'http://example.org/alpha' }
             }, {
                 success: function (obj, r) { next(); },
                 error: function (c, r) { next('ERROR'); }
@@ -37,7 +37,7 @@ asyncTest("Exercise S3 backbone", function () {
             // Create a new Activity and save it.
             a2 = new Activity({
                 actor: { displayName: 'Jane Smith' },
-                object: { url: 'http://example.org/beta' },
+                object: { url: 'http://example.org/beta' }
             }, { 
                 collection: activities
             });

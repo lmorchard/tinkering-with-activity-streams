@@ -12,20 +12,19 @@ var TWAS_main = {
     },
 
     init: function () {
-        $(document).ready(_(this.ready).bind(this));
+        var $this = this;
+        $(document).ready(function () {
+            $this.setupModels();
+            $this.setupViews();
+            $this.setupFeeds();
+        });
         return this;
     },
 
-    ready: function () {
-        this.setupModels();
-        this.setupViews();
-        this.setupFeeds();
-    },
-
     setupModels: function () {
-        this.sync = (new S3Sync(_.defaults({
+        this.sync = new S3Sync(_.defaults({
             prefix: 'activities/'
-        }, this.config))).bind();
+        }, this.config)).bind();
 
         Activity.prototype.sync = this.sync;
         ActivityCollection.prototype.sync = this.sync;
@@ -42,11 +41,21 @@ var TWAS_main = {
     setupFeeds: function () {
         var $this = this;
 
-        var feed_cls = {
+        // Build a convenience mapping to feed generator classes.
+        var cls = {
             json: TWAS_Feeds_JSON,
             tmpl: TWAS_Feeds_Templated
         };
-        this.feeds = _.map([
+
+        // Defaults for each feed generator.
+        var def_opts = {
+            activities: this.activities,
+            defeat_cache: false,
+            prefix: ''
+        };
+
+        // Feed generator options
+        var feed_opts = [
             { type: 'json',
                 name: 'feeds/activities.json',
                 content_type: 'application/json; charset=UTF-8' },
@@ -62,17 +71,18 @@ var TWAS_main = {
                 name: 'index.html',
                 content_type: 'text/html; charset=UTF-8',
                 template: 'templates/index.html.tmpl' }
-        ], function (o) {
-            return new feed_cls[o.type](_.defaults(o, {
-                activities: $this.activities,
-                defeat_cache: false,
-                prefix: '',
-            }, $this.config));
+        ];
+
+        // Build all the static feed generators.
+        this.feeds = _.map(feed_opts, function (o) {
+            return new cls[o.type](_.defaults(o, def_opts, $this.config));
         });
-        
-        var pf = _.bind(this.publishFeeds, this)
-        this.activities.bind('change', pf);
-        this.activities.bind('destroy', pf);
+
+        // Publish all feeds when an activity is added, changed, or destroyed.
+        var pf = _.bind(this.publishFeeds, this);
+        _.each(['add', 'change', 'destroy'], function (n) {
+            $this.activities.bind(n, pf);
+        });
     },
 
     publishFeeds: function () {
