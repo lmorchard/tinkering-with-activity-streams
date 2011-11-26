@@ -41,16 +41,21 @@ var TWAS_main = {
             key_id: this.config.key_id,
             secret_key: this.config.secret_key,
             bucket: this.config.bucket,
-            prefix: 'feeds/',
+            prefix: '',
             debug: this.config.debug
         };
 
-        this.as_feed = new TWAS_Feeds_ActivityStream(feed_opts);
-        this.rss_feed = new TWAS_Feeds_RSS(feed_opts);
+        this.feeds = [
+            new TWAS_Feeds_ActivityStream(feed_opts),
+            new TWAS_Feeds_RSS(feed_opts),
+            new TWAS_Feeds_Atom(feed_opts),
+            new TWAS_Feeds_HTML(feed_opts)
+        ];
         
         var feed_publish = _(function () {
-            this.as_feed.publish();
-            this.rss_feed.publish();
+            _.each(this.feeds, function (feed) {
+                feed.publish();
+            });
         }).bind(this);
 
         this.activities.bind('change', feed_publish);

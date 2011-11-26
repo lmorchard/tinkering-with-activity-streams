@@ -1,0 +1,7 @@
+.templates { display: none; }
+#activity { width: 33%; float: left; margin: 0.25em 0.5em; }
+#activities { margin: 0.25em 0.5em 0.25em 35%; padding: 0.125em 0.25em; }
+#activities .stream { list-style: none; margin: 0; padding: 0; }
+li.activity { margin: 1em 0; }
+li.activity .object p.content { margin: 0.5em 1.25em; padding: 0; }
+
