@@ -5,12 +5,14 @@
 var TWAS_Views_App = Backbone.View.extend({
     el: $('body#post-app'),
     tagName: 'body',
-    
     events: {
     },
-
     initialize: function (options) {
+        this.prefs = options.prefs;
         this.activities = options.activities;
+        this.prefs_form = new TWAS_Views_PrefsForm({
+            appview: this, prefs: this.prefs
+        });
         this.activity_form = new TWAS_Views_ActivityForm({
             appview: this, activities: this.activities
         });
@@ -18,12 +20,118 @@ var TWAS_Views_App = Backbone.View.extend({
             appview: this, activities: this.activities
         });
     }
+});
 
+var TWAS_Views_PrefsForm = Backbone.View.extend({
+    el: $('form#prefs'),
+    
+    events: {
+        'submit': 'login',
+        'click button.login': 'login',
+        'click button.logout': 'logout',
+        'click button.save': 'save',
+        'click button.destroy': 'destroy'
+    },
+
+    auth_fields: ['bucket', 'username', 'password'],
+    prefs_fields: ['key_id', 'secret_key'],
+
+    initialize: function (options) {
+        var $this = this;
+        this.prefs = options.prefs;
+        this.appview = options.appview;
+        _.each(this.auth_fields, function (n) {
+            $this[n] = localStorage.getItem(n);
+            $this.$('#prefs_'+n).val($this[n]);
+        });
+        this.login();
+    },
+
+    save: function (ev) {
+        var $this = this;
+        if (!(this.bucket && this.username && this.password)) {
+            return false;
+        }
+        _.each(this.prefs_fields, function (n) {
+            $this.prefs.set(n, $this.$('#prefs_'+n).val());
+        });
+        this.prefs.setOptions({
+            bucket: this.bucket,
+            username: this.username,
+            password: this.password,
+            key_id: this.prefs.get('key_id'),
+            secret_key: this.prefs.get('secret_key')
+        });
+        this.prefs.store(
+            function () {
+                $this.trigger('prefs:stored', $this.prefs);
+            },
+            function () {
+                console.error("PREFS STORE FAILED");
+            }
+        );
+        return false;
+    },
+
+    login: function () {
+        var $this = this;
+        _.each(this.auth_fields, function (n) {
+            $this[n] = $this.$('#prefs_'+n).val();
+            localStorage.setItem(n, $this[n]);
+        });
+        if (!(this.bucket && this.username && this.password)) {
+            return false;
+        }
+        this.prefs.setOptions({
+            bucket: this.bucket,
+            username: this.username,
+            password: this.password
+        });
+        this.prefs.fetch(
+            function () {
+                $this.prefs.setOptions({
+                    bucket: $this.bucket,
+                    key_id: $this.prefs.get('key_id'),
+                    secret_key: $this.prefs.get('secret_key')
+                });
+                _.each($this.prefs_fields, function (n) {
+                    $this.$('#prefs_'+n).val($this.prefs.get(n));
+                });
+                $this.trigger('prefs:fetched', $this.prefs);
+            },
+            function () {
+                console.error("PREFS FETCH FAILED");
+            }
+        );
+        return false;
+    },
+
+    logout: function () {
+        var $this = this;
+        var clear_fn = function (n) {
+            $this[n] = null;
+            localStorage.removeItem(n);
+            $this.$('#prefs_'+n).val("");
+        }
+        _.each(this.auth_fields, clear_fn);
+        _.each(this.prefs_fields, clear_fn);
+        return false;
+    },
+
+    destroy: function (ev) {
+        var $this = this;
+        if (!this.prefs) { return false; }
+        _.each(this.prefs_fields, function (n) {
+            $this.$('#prefs_'+n).val('');
+        });
+        this.prefs.destroy();
+        return false;
+    }
+    
 });
 
 var TWAS_Views_ActivityForm = Backbone.View.extend({
     el: $('form#activity'),
-    tagName: 'form',
     
     events: {
         'submit': 'commit',
@@ -104,6 +212,7 @@ var TWAS_Views_ActivitiesSection = Backbone.View.extend({
     tagName: 'section',
     
     events: {
+        'click button.refresh': 'refresh'
     },
     
     initialize: function (options) {
@@ -112,11 +221,18 @@ var TWAS_Views_ActivitiesSection = Backbone.View.extend({
         this.appview = options.appview;
         this.activities = this.appview.activities;
 
-        _(['all', 'reset', 'add']).each(function (name) {
+        _.each(['set', 'fetch'], function (n) {
+            $this.appview.prefs.bind(n, function () {
+                $this.refresh();
+            });
+        });
+        _.each(['all', 'reset', 'add'], function (name) {
             $this.activities.bind(name,
                 _($this['activities_'+name]).bind($this));
         });
+    },
 
+    refresh: function () {
         this.activities.fetch({ limit: 15 });
     },
 

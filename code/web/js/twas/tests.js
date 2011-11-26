@@ -5,15 +5,89 @@ var AWS_KEY_ID = localStorage.getItem('AWS_KEY_ID'),
     test_key = test_prefix + 'foobar',
     test_content = 'TEST CONTENT';
 
+var s3_opts = {
+    key_id: AWS_KEY_ID,
+    secret_key: AWS_SECRET_KEY,
+    bucket: 'twas',
+    prefix: test_prefix,
+    debug: true
+};
+
+test("Exercise AES encryption", function () {
+    var password = "wankelrotary",
+        cleartext = "Watson, I need you",
+        encrypted = GibberishAES.enc(cleartext, password),
+        unencrypted = GibberishAES.dec(encrypted, password);
+    console.log("CRYPT", encrypted);
+    equal(cleartext, unencrypted);
+});
+
+asyncTest("Exercise AES encrypted prefs", function () {
+
+    var opts = _.defaults({
+            prefix: 'test-data/prefs/'
+        }, s3_opts),
+        user = 'testuser', 
+        pass = 'testpass';
+
+    async.waterfall([
+
+        function (next) {
+            var prefs = new TWAS_Prefs(opts);
+            prefs.authenticate(user, pass);
+            prefs.set('fullname', 'Test User');
+            prefs.set('location', 'Anytown, USA');
+            prefs.store(
+                function () {
+                    next();
+                },
+                function () {
+                    ok(false, "Fetch failed");
+                    next();
+                }
+            );
+        },
+
+        function (next) {
+            var prefs = new TWAS_Prefs(opts);
+            prefs.authenticate(user, pass);
+            prefs.fetch(
+                function (data) {
+                    equal('Test User', prefs.get('fullname'));
+                    equal('Anytown, USA', prefs.get('location'));
+                    next();
+                },
+                function () {
+                    ok(false, "Fetch failed");
+                    next();
+                }
+            );
+        },
+
+        function (next) {
+            var prefs = new TWAS_Prefs(opts);
+            prefs.authenticate(user, pass);
+            prefs.destroy(
+                function () {
+                    next();
+                },
+                function () {
+                    ok(false, "Fetch failed");
+                    next();
+                }
+            );
+        }
+
+    ], function (err) {
+        if (err) { ok(false, err); }
+        start();
+    });
+
+});
+
 asyncTest("Exercise S3 backbone", function () {
 
-    var sync = (new S3Sync({
-        key_id: AWS_KEY_ID,
-        secret_key: AWS_SECRET_KEY,
-        bucket: 'twas',
-        prefix: test_prefix,
-        debug: true
-    })).bind();
+    var sync = new S3Sync(s3_opts).bind();
 
     // Backbone.sync = sync;
     Activity.prototype.sync = sync;

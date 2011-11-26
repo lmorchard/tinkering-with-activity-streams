@@ -4,15 +4,9 @@
 
 var TWAS_main = {
 
-    config: {
-        key_id: localStorage.getItem('AWS_KEY_ID'),
-        secret_key: localStorage.getItem('AWS_SECRET_KEY'),
-        bucket: 'twas',
-        debug: true
-    },
-
     init: function () {
         var $this = this;
+        this.prefs = new TWAS_Prefs();
         $(document).ready(function () {
             $this.setupModels();
             $this.setupViews();
@@ -21,21 +15,39 @@ var TWAS_main = {
         return this;
     },
 
-    setupModels: function () {
-        this.sync = new S3Sync(_.defaults({
-            prefix: 'activities/'
-        }, this.config)).bind();
+    updateSync: function () {
+    },
 
-        Activity.prototype.sync = this.sync;
-        ActivityCollection.prototype.sync = this.sync;
+    setupModels: function () {
+        var $this = this;
+
+        this.sync = new S3Sync({
+            prefix: 'activities/'
+        });
+        _.each(['set', 'fetch'], function (n) {
+            $this.prefs.bind(n, function () {
+                $this.sync.setOptions({
+                    bucket: $this.prefs.bucket,
+                    key_id: $this.prefs.get('key_id'),
+                    secret_key: $this.prefs.get('secret_key'),
+                    prefix: 'activities/'
+                });
+            });
+        });
+
+        var sync_fn = this.sync.bind();
+        Activity.prototype.sync = sync_fn;
+        ActivityCollection.prototype.sync = sync_fn;
 
         this.activities = new ActivityCollection();
     },
 
     setupViews: function () {
         this.app_view = new TWAS_Views_App({
+            prefs: this.prefs,
             activities: this.activities
         });
+        window.app_view = this.app_view;
     },
 
     setupFeeds: function () {
@@ -75,7 +87,18 @@ var TWAS_main = {
 
         // Build all the static feed generators.
         this.feeds = _.map(feed_opts, function (o) {
-            return new cls[o.type](_.defaults(o, def_opts, $this.config));
+            var feed = new cls[o.type](_.defaults(o, def_opts, $this.config));
+            _.each(['set', 'fetch'], function (n) {
+                $this.prefs.bind(n, function () {
+                    feed.setOptions({
+                        bucket: $this.prefs.bucket,
+                        key_id: $this.prefs.get('key_id'),
+                        secret_key: $this.prefs.get('secret_key'),
+                        prefix: ''
+                    });
+                });
+            });
+            return feed;
         });
 
         // Publish all feeds when an activity is added, changed, or destroyed.

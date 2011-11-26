@@ -19,10 +19,15 @@ S3Sync.prototype = {
 
     // Initialize object with options and an S3 instance.
     init: function (options) {
+        this.setOptions(options);
+        return this;
+    },
+
+    // Set options for sync, creating a new S3 connection
+    setOptions: function (options) {
         this.options = options;
         this.s3 = new S3Ajax(options);
         _.extend(this, this.defaults, options);
-        return this;
     },
 
     // Bind a sync function for use by Backbone that uses this instance.

@@ -35,11 +35,11 @@ S3Ajax.prototype = {
 
     // Initialize object (called from constructor)
     init: function (options) {
-        this.options = options;
+        this.options = options || {};
         for (var k in this.defaults) {
             if (this.defaults.hasOwnProperty(k)) {
-                this[k] = (typeof(options[k]) !== 'undefined') ?
-                    options[k] : this.defaults[k];
+                this[k] = (typeof(this.options[k]) !== 'undefined') ?
+                    this.options[k] : this.defaults[k];
             }
         }
         return this;

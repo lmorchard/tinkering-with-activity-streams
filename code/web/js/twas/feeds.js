@@ -9,13 +9,16 @@ _.extend(TWAS_Feeds_Base.prototype, {
         key_id: '',
         secret_key: '',
         bucket: 'twas',
-        prefix: 'feeds/',
+        prefix: '',
         debug: true,
         force_fetch: false
     },
     name: 'feed.txt',
     content_type: 'text/plain; charset=UTF-8',
     init: function (options) {
+        this.setOptions(options);
+    },
+    setOptions: function (options) {
         this.options = options;
         this.s3 = new S3Ajax(options);
         _.extend(this, this.defaults, options);
