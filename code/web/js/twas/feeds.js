@@ -10,7 +10,8 @@ _.extend(TWAS_Feeds_Base.prototype, {
         secret_key: '',
         bucket: 'twas',
         prefix: 'feeds/',
-        debug: true
+        debug: true,
+        force_fetch: false
     },
     name: 'feed.txt',
     content_type: 'text/plain; charset=UTF-8',
@@ -21,7 +22,11 @@ _.extend(TWAS_Feeds_Base.prototype, {
     },
     publish: function (success, error) {
         var $this = this;
-        $this.fetch(function (coll, items) {
+        $this.fetch(function (coll, data) {
+            var items = coll.chain().last(15).value();
+            items.sort(function (a, b) {
+                return b.get('published').localeCompare(a.get('published'));
+            });
             $this.render(coll, items, function (content) {
                 $this.s3.put(
                     $this.bucket, $this.prefix + $this.name, content,
@@ -32,16 +37,13 @@ _.extend(TWAS_Feeds_Base.prototype, {
         }, error);
     },
     fetch: function (success, error) {
-        /*
-        var activities = new ActivityCollection();
-        activities.sync = this.activities.sync;
-        activities.fetch({
-            limit: 15,
-            success: success,
-            error: error
-        });
-        */
-        success(this.activities);
+        if (!this.force_fetch) {
+            success(this.activities);
+        } else {
+            var activities = new ActivityCollection();
+            activities.sync = this.activities.sync;
+            activities.fetch({limit: 15, success: success, error: error});
+        }
     },
     render: function (coll, items, success, error) {
         success('');
@@ -55,16 +57,11 @@ _.extend(TWAS_Feeds_JSON.prototype, TWAS_Feeds_Base.prototype, {
     name: 'feeds/activities.json',
     content_type: 'application/json; charset=UTF-8',
     render: function (coll, items, success, error) {
-        var items = coll.chain().last(15).map(function (item) {
-            return item.toJSON();
-        }).value();
-        items.sort(function (a, b) {
-            return b.published.localeCompare(a.published);
-        });
-        var as = { 
-            items: items
-        };
-        success(JSON.stringify(as));
+        success(JSON.stringify({ 
+            items: items.map(function (item) {
+                return item.toJSON();
+            }) 
+        }));
     }
 });
 
@@ -80,17 +77,10 @@ _.extend(TWAS_Feeds_Templated.prototype, TWAS_Feeds_Base.prototype, {
             this.bucket, this.template,
             function (resp, obj) {
                 $this.template_compiled = _.template(resp.responseText);
-            },
-            function () {
-                $this.template_compiled = _.template("ERROR");
             }
         );
     },
     render: function (coll, items, success, error) {
-        var items = coll.chain().last(15).value();
-        items.sort(function (a, b) {
-            return b.get('published').localeCompare(a.get('published'));
-        });
         success(this.template_compiled({ items: items }));
     }
 });
