@@ -48,10 +48,10 @@ _.extend(TWAS_Feeds_Base.prototype, {
     }
 });
 
-var TWAS_Feeds_ActivityStream = function () {
+var TWAS_Feeds_JSON = function () {
     return this.init.apply(this, arguments);
 };
-_.extend(TWAS_Feeds_ActivityStream.prototype, TWAS_Feeds_Base.prototype, {
+_.extend(TWAS_Feeds_JSON.prototype, TWAS_Feeds_Base.prototype, {
     name: 'feeds/activities.json',
     content_type: 'application/json; charset=UTF-8',
     render: function (coll, items, success, error) {
@@ -93,31 +93,4 @@ _.extend(TWAS_Feeds_Templated.prototype, TWAS_Feeds_Base.prototype, {
         });
         success(this.template_compiled({ items: items }));
     }
-});
-
-var TWAS_Feeds_RSS = function () {
-    return this.init.apply(this, arguments);
-};
-_.extend(TWAS_Feeds_RSS.prototype, TWAS_Feeds_Templated.prototype, {
-    name: 'feeds/activities.rss',
-    template: 'templates/activities.rss.tmpl',
-    content_type: 'application/rss+xml; charset=UTF-8'
-});
-
-var TWAS_Feeds_Atom = function () {
-    return this.init.apply(this, arguments);
-};
-_.extend(TWAS_Feeds_Atom.prototype, TWAS_Feeds_Templated.prototype, {
-    name: 'feeds/activities.atom',
-    template: 'templates/activities.atom.tmpl',
-    content_type: 'application/atom+xml; charset=UTF-8'
-});
-
-var TWAS_Feeds_HTML = function () {
-    return this.init.apply(this, arguments);
-};
-_.extend(TWAS_Feeds_HTML.prototype, TWAS_Feeds_Templated.prototype, {
-    name: 'index.html',
-    template: 'templates/index.html.tmpl',
-    content_type: 'text/html; charset=UTF-8'
 });

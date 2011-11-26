@@ -36,7 +36,7 @@ var TWAS_main = {
             activities: this.activities
         });
         
-        var feed_opts = {
+        var base_feed_opts = {
             activities: this.activities,
             key_id: this.config.key_id,
             secret_key: this.config.secret_key,
@@ -46,10 +46,25 @@ var TWAS_main = {
         };
 
         this.feeds = [
-            new TWAS_Feeds_ActivityStream(feed_opts),
-            new TWAS_Feeds_RSS(feed_opts),
-            new TWAS_Feeds_Atom(feed_opts),
-            new TWAS_Feeds_HTML(feed_opts)
+            new TWAS_Feeds_JSON(_.defaults({
+                name: 'feeds/activities.json',
+                content_type: 'application/json; charset=UTF-8',
+            }, base_feed_opts)),
+            new TWAS_Feeds_Templated(_.defaults({
+                name: 'feeds/activities.rss',
+                content_type: 'application/rss+xml; charset=UTF-8',
+                template: 'templates/activities.rss.tmpl'
+            }, base_feed_opts)),
+            new TWAS_Feeds_Templated(_.defaults({
+                name: 'feeds/activities.atom',
+                content_type: 'application/atom+xml; charset=UTF-8',
+                template: 'templates/activities.atom.tmpl'
+            }, base_feed_opts)),
+            new TWAS_Feeds_Templated(_.defaults({
+                name: 'index.html',
+                content_type: 'text/html; charset=UTF-8',
+                template: 'templates/index.html.tmpl'
+            }, base_feed_opts))
         ];
         
         var feed_publish = _(function () {
