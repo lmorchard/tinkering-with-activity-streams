@@ -13,7 +13,7 @@ from manage import path
 
 from twas.utils import opml
 
-from main.models import FeedSubscription, HttpResource
+from main.models import Profile, FeedSubscription, HttpResource
 
 PROFILES_BY_USER_NAME_VIEW = 'main/Profile-by-user-name'
 FEEDSUBSCRIPTION_BY_PROFILE_ID_VIEW = 'main/FeedSubscription-by-profile-id'
@@ -70,10 +70,6 @@ class Command(BaseCommand):
             r = requests.get(s.url, headers=h, timeout=10.0)
             print "\t%s" % (r.status_code)
 
-            if 304 == r.status_code:
-                # 304 Not Modified means no need to update.
-                return
-
             if 200 == r.status_code:
                 # Try grabbing response content, 
                 # clear error if successful.
@@ -84,7 +80,19 @@ class Command(BaseCommand):
                 content = r.content
                 content_type = r.headers['content-type']
             
+            if 304 == r.status_code:
+                # 304 Not Modified means no need to update.
+                return
+
             # TODO: Handle 3xx redirects.
+            if 301 == r.status_code:
+                s.url = hr.headers['location']
+                s.save()
+                return self.fetchSubscription(s)
+
+            # TODO: Disable feeds with 4xx and 5xx
+            if 404 == r.status_code:
+                s.disabled = True
         
         except Exception, e:
             # If there was any exception at all, save it.

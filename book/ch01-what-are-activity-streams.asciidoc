@@ -4,14 +4,14 @@ Consider that Activity Streams are a rather recent development on the Web.
 It might be illustrative to take a quick stroll down memory lane and peek
 at what came before.
 
-=== From documents to feeds ===
+=== From documents to blogs ===
 
 :u_highenergy: http://www.w3.org/People/Berners-Lee/1991/08/art-6484.txt
 :u_planfile: http://catb.org/jargon/html/P/plan-file.html
 
 HTML documents were the original hotness, drafted by "{u_highenergy}[high
 energy physicists to share data, news, and documentation]". But, soon, a
-broader population of random academics and friends became webmasters and
+broader population of academics and friends became webmasters and
 webmistresses. They transformed their {u_planfile}[.plan files] into home
 pages and discovered animated GIFs for the first time.
 
@@ -19,9 +19,9 @@ pages and discovered animated GIFs for the first time.
 
 :u_blog_history: http://oldweblogscomblog.scripting.com/historyofweblogs 
 
-Eventually, the patterns of frequently updated pages
+Eventually, frequently updated pages
 {u_blog_history}[evolved into the weblog]—or "blog" for short. The blog
-format consists typically of pages with changes listed in
+format consists typically of pages with serial changes listed in
 reverse-chronological order—so the new stuff always shows up at the top of
 the page. Early blogs served as news desks, shared pointers to cool stuff,
 or even as personal journals open to the public.
@@ -49,27 +49,21 @@ complexity could grow. In fact, back in the early 2000's, some of
 :u_news_readers: http://netnewswireapp.com/
 :u_rss_history: http://en.wikipedia.org/wiki/RSS#History
 
+=== From blogs to feeds ===
+
 Along with APIs for publishing, {u_rss_history}[XML syndication feeds began
 to take off] for distributing and consuming content. Whereas HTML pages
 were mainly intended for human consumption by way of a browser, syndication
-feeds wrapped web content in machine-friendly structures. Allowing machines
-to more easily process web content allowed the creation of {u_portals}[web
-portals] and {u_news_readers}[personal news readers]—automated web surfers
-capable of pulling together content from many other sites on the web and
-presenting that content in new and interesting and more convenient ways.
+feeds wrapped web content in machine-friendly structures.
 
 // TODO: Figure? My Netscape, Radio Userland, NetNewsWire?
 
-=== Feeds are blogs for automated surfers ===
+Syndication feeds are XML documents that consist mainly of a parent
+document describing a site, and a collection of recent content items from
+the site. The individual content items generally offer the following
+fields:
 
-Syndication feeds are XML documents that consist mainly of the following:
-
-    * a parent document describing the site to which the feed belongs; and
-    * a collection of items describing pieces of content provided by the site. 
-
-The individual items themselves generally offer the following fields:
-
-`date`:: Publication date of the feed or item
+`pubDate`:: Publication date and time
 `title`:: Short title, generally a single sentence or less
 `description`:: Longer description consisting of paragraphs or a fragment
     of HTML content
@@ -80,10 +74,10 @@ The individual items themselves generally offer the following fields:
 :u_rss: http://cyber.law.harvard.edu/rss/rss.html
 :u_atom: http://www.ietf.org/rfc/rfc4287.txt
 
-This is a simplified version of the story, which ignores many fields
-defined for feeds and items in {u_rss}[RSS]. It also doesn't even mention
-the alternate feed format called {u_atom}[Atom (a.k.a. RFC 4287]). But,
-from this you can get a general idea of the data model behind feeds.
+This ignores many fields defined for feeds and items in {u_rss}[RSS]. It
+also doesn't even consider the alternate feed format called {u_atom}[Atom
+(a.k.a. RFC 4287]). But, from this gives you a general idea of the data
+model behind feeds.
 
 :u_hacking_feeds: http://www.amazon.com/gp/product/0764597582?ie=UTF8&tag=0xdecafbad01-20&linkCode=as2&camp=1789&c%0D%0Areative=9325&creativeASIN=0764597582
 :u_wiley: http://www.wiley.com/WileyCDA/WileyTitle/productCd-0764597582.html
@@ -91,25 +85,28 @@ from this you can get a general idea of the data model behind feeds.
 [TIP]
 Cheap plug ahead: If you're interested in reading more in-depth about
 syndication feeds, then look for my first book: {u_hacking_feeds}[Hacking
-RSS and Atom], published in 2005 by {u_wiley}[Wiley]. In a sense, this book
-is that one's spiritual successor.
+RSS and Atom], published in 2005 by {u_wiley}[Wiley]. In a sense, this is
+the spiritual successor to that book.
 
-So: date, title, description, and link—these are the basic components from
-an item found in an RSS or Atom feed. If you think about it, this schema
-closely mirrors the shape of blogs. And, just like blogs, they generally
-contain items in reverse-chronological order—so the new stuff shows up at
-the top. In other words, feeds are blogs for bots.
+So: date & time, title, description, and link—these are the basic
+components found in an item from a syndication feed. If you think about
+it, this schema closely mirrors the shape of blogs. And, just like blogs,
+they generally contain items in reverse-chronological order—so the new
+stuff shows up at the top. In other words, feeds are blogs for bots.
 
-But, what kind of bots read syndication feeds? As hinted at earlier:
-{u_portals}[Portals] and {u_news_readers}[news readers].
+But, what kind of bots read syndication feeds? {u_portals}[Web portals]
+and {u_news_readers}[personal news readers].
+
+:u_newsriver: http://www.reallysimplesyndication.com/riverOfNews
 
 Imagine, if you will: In the days before feeds, we relied on browser
 bookmarks to make daily rounds to popular news sites and blogs.  But, with
-the availability of feeds, software could make those daily rounds for
-us—that is, feeds from the sites we used to visit in person got fetched
-periodically throughout the day, and their content was assembled into a
-single combined display. Automated surfing, the ultimate in information
-addiction convenience!
+the availability of feeds, software could make those daily rounds—even
+hourly rounds—on our behalf. That is, software fetched feeds from the sites
+we used to visit in person, and their content was assembled into a single
+combined display, arranged in reverse-chronological order—also known as a
+{u_newsriver}[River of News]. Automated surfing, the ultimate in
+information addiction convenience!
 
 === From high energy physicists to blogosphere techies ===
 
@@ -123,14 +120,14 @@ addiction convenience!
 :u_livejournal: http://livejournal.com/
 
 So, physics papers and homepages evolved into blogs. And blogs, in turn,
-found themselves pressed into publishing global news, link collections,
-personal journals, photo galleries, and even audiobooks in podcast form.
+were used to publish global news, link collections, personal journals,
+photo galleries, and even audiobooks in podcast form.
 
 Blogs also sprouted sophisticated feedback mechanisms and interconnections:
 Comment threads appeared paired with entries. {u_referer}[Referers] (sic),
 {u_trackback}[trackbacks], and {u_pingback}[pingbacks] were used to
 automatically form links between entries posted on different sites. Sidebar
-widgets offered links to other blogs (see also:
+widgets offered links to affiliated blogs (see also:
 "{u_blog_glossary}[blogroll]"), opened up {u_blog_chat}[live chat rooms],
 and presented {u_mybloglog}[readership rosters]. The network established
 between blogs—known as {u_blogosphere}[the blogosphere]—formed a powerful
@@ -140,18 +137,25 @@ But, the thing is, this social network grew almost entirely _in spite of_
 the technologies involved. That is to say, people signed up for web hosting
 and learned how to configure blogs in anticipation of promised
 expressiveness and community. Blogs presented a technical challenge that
-filtered out all but the most adventurous—for the most part, the
-Blogosphere has been an exclusive community, weighted heavily with techies.
+filtered out all but the most adventurous—thus, the Blogosphere has largely
+been an exclusive community, weighted heavily with techies.
 
 === The social web beyond blogs ===
 
 :u_web20: http://en.wikipedia.org/wiki/Web_2.0
 
-That's not to say that people didn't work to address that exclusivity,
+That's not to say there hasn't been work to address that exclusivity,
 though. Throughout the later half of the 2000's, a fresh wave of web
-startups began that was referred to by many as "{u_web20}[Web 2.0]".
-Though there were many fresh ideas, quite a number of new sites and
-services picked up leads from the Blogosphere. 
+startups arrived that was labelled by many as "{u_web20}[Web 2.0]".  
+
+Though there were plenty of fresh ideas, many of these new sites and
+services picked up leads and loose ends from the blogosphere.  Rather than
+require the purchase of web hosting, most opted for ad-supported business
+models and free registration. Along with sponsored hosting, a focus on
+usability got the technology out of the way and trumped the need for social
+humans to learn an alphabet soup of arcanities like HTTP, FTP, PHP, and
+SQL. This made the next generation of social media accessible to so many
+more people.
 
 :u_flickr: http://flickr.com
 :u_delicious: http://del.icio.us
@@ -162,44 +166,97 @@ services picked up leads from the Blogosphere.
 :u_digg: http://www.digg.com/
 
 Rather than set up a photo gallery theme on a blog, you could sign up for
-{u_flickr}[Flickr]. Instead of posting bullet-pointed lists of interesting
-links, you could share your bookmarks on {u_delicious}[del.icio.us]. Videos
-could be easily uploaded, processed, and viewed via {u_youtube}[YouTube].
-{u_digg}[Digg] helped us share and amplify the news of the day. Short
-missives, or asides, were easily absorbed by {u_twitter}[Twitter]. There's
-even been {u_thesocialnetwork}[a movie made] about the much more
-inclusive—yet paradoxically more contained—cousin to the Blogosphere
-offered by {u_facebook}[Facebook].
+{u_flickr}[Flickr]. Instead of posting lists of interesting links, you
+could share your bookmarks on {u_delicious}[del.icio.us]. Videos could be
+easily uploaded, processed, and viewed via {u_youtube}[YouTube]. The news
+of the day could shared and amplified over on {u_digg}[Digg]. Short
+missives, or asides, were easily absorbed and broadcast by
+{u_twitter}[Twitter]. There's even been {u_thesocialnetwork}[a movie made]
+about the much more accessible and inclusive—though more contained—cousin
+to the blogosphere offered by {u_facebook}[Facebook].
 
-In many cases, this new generation of social media sites refined the ideas
-prototyped on blogs. But, rather than require the purchase of web hosting,
-most opted for ad-supported business models and free registration. Along
-with sponsored hosting, a focus on usability got the technology out of the
-way and trumped the need for social humans to learn an alphabet soup of
-arcanities like HTTP, FTP, PHP, and SQL.
+=== Human beings add texture ===
 
-=== From blogs and feeds to what? ===
+Blogs and feeds inherit a lot of DNA from news publishing and content
+management systems. Human beings aren't just content generators, though.
+What we do and how we share experiences is not always captured in the data
+model of feeds. If anything, it's that feeds are _too_ free form: You can
+shove almost anything into the `description` field of a feed item, while
+`title` and `link` are handy for describing just about any page on the web.
 
-Recall that feeds and blogs closely mirror each others' structures. As it
-happens, those structures are simple and largely free-form: You can shove
-almost anything into the `description` field of a feed item, while `title`
-and `link` are handy for describing just about any page on the web.
+Consider that the social media sites of Web 2.0 _refined_ many of the
+purposes and patterns first pioneered in blogs. Along with those
+refinements came more interesting—and more textured—data. And even though
+that data can find _rough_ expression in existing HTML and feed formats, it
+can be difficult to parse meaning and significant data from those rough
+expressions.
 
-But, the social media sites of Web 2.0 refined many of the purposes and
-patterns first pioneered in blogs. Along with those refinements came more
-interesting—and more textured—data. And even though that data could find
-rough expression in the form of existing HTML and feed formats, more
-precise representations can open up new applications and opportunities.
+More precise representations can open up new applications and
+opportunities. Recall what made feeds so interesting in the first place:
+They made frequently-updated web pages more machine-friendly. This, in
+turn, opened the way for automated web surfers that could gather news for
+us.
 
-Remember how feeds were earlier described as blogs for bots? And remember
-how those bots can serve as automated surfers, augmenting our abilities to
-gather news from across the web?
+Well, consider what automated web agents we could build if we had more
+machine-readable information about people and what they do?
 
-Well, imagine the kind of data can be extracted from the structures that
-have emerged from refined social media. And, once we have that structured
-data in machine-friendly form, consider what kind of bots we can build from
-there. (As it happens, that's what this book is all about—so don't think
-_too_ hard about it yet, or you'll spoil the ending!)
+=== Streaming your life away ===
+
+:u_lifestreams: http://cs-www.cs.yale.edu/homes/freeman/lifestreams.html
+:u_lifestreams_dissertation: http://www.cs.yale.edu/homes/freeman/dissertation/etf.pdf
+:u_memolane: http://memolane.com/
+:u_friendfeed: http://friendfeed.com/
+
+Even older than blogs and feeds is the notion of
+{u_lifestreams}[lifestreams], a term coined by Eric Freeman and David
+Gelernter as "a time-ordered stream of documents that functions as a diary
+of your electronic life".
+
+The data model of a lifestream, as described in
+{u_lifestreams_dissertation}[Freeman's 1997 dissertation], consists of a
+set of flexibly structured personal documents, each of which is collected
+into one or more chronologically-ordered streams. These streams can be
+curated by hand or, more interestingly, produced by dynamic filtering
+agents equipped with pattern match functions.
+
+Feeds produced by social media tools look a lot like lifestreams.  There've
+even been {u_memolane}[platforms] {u_friendfeed}[built] to collect, filter,
+archive, summarize, and republish content carried in RSS and Atom feeds.
+But, there are things missing from the data model.  Or, at least from the
+data available, it can be difficult for a machine to determine things such
+as:
+
+// TODO: Need some better examples:
+    * Does this item represent a location, photo, event, song, or essay? 
+    * Does this location indicate where I've been, or where I plan to be?
+    * Did I create this item, or is it something I liked or shared?
+    * Am I inviting you to this event, planning to attend myself, or
+        sending regrets?
+    * From where did this item come? To whom or where am I directing it?
+
+Missing this kind of data in a machine-friendly form makes it difficult to
+build the powerful substream agents and summarization facilities
+described as part of lifestreams—and those are very interesting and
+powerful features. They can enable the construction of stream views like
+the following:
+
+// TODO: Need some better examples:
+    * What are people in San Francisco talking about?
+    * What have my friends found interesting in the news today?
+    * Show me a gallery of photos taken by my friends who have been to
+        Toronto.
+    * Give me a playlist of music my co-workers have been listening to.
+    * Who's coming to my party?
+
+Behind each of these examples, there's bound to be one or more social media
+sites offering it as a feature. But, you and your friends have to live that
+slice of life through that particular site to get the benefits. Remember
+when feeds let us build robots to do all our surfing between a laundry list
+of sites?  Wouldn't it be nice if we could pull everything back into
+one common stream again and get these views all in one place, or better yet
+by using any tools we like?
+
+=== A Theory of Activities ===
 
 
 

@@ -1,7 +1,16 @@
 # Tinkering with Activity Streams
 
 * Preface
-* The Activity Stream Data Model
+* Part I:
+    * What are Activity Streams?
+    * Gathering Tools for Tinkering
+        * node.js
+        * Python
+        * CouchDB
+        * RabbitMQ
+        * Celery
+        * Vagrant & Puppet?
+
 * Creating
 * Publishing
     * Republishing
@@ -18,8 +27,14 @@
 
 ## Inbox
 
+* The Lifestreams data model seems a lot like CouchDB
+    * Substreams & agents = a lot like map functions
+    * Summarize = a lot like reduce function
+    
+
 * Hacks
-    * rss/atom-to-as-json converter
+    * convert RSS/Atom feed to AS-JSON
+        * fill in missing fields with inferences and user-supplied metadata
     * CouchApp to post to an AS?
     * S3 app to post to an AS?
         * status notes
@@ -29,4 +44,7 @@
         * from facebook
         * from twitter
         * from google+
+    * webfinger seems handy
     * How do replies work?
+        * salmon?
+        * ostatus?

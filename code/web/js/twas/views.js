@@ -11,14 +11,20 @@ var TWAS_Views_App = Backbone.View.extend({
         this.prefs = options.prefs;
         this.activities = options.activities;
         this.prefs_form = new TWAS_Views_PrefsForm({
-            appview: this, prefs: this.prefs
+            appview: this,
+            prefs: this.prefs
         });
         this.activity_form = new TWAS_Views_ActivityForm({
-            appview: this, activities: this.activities
+            appview: this,
+            activities: this.activities
         });
         this.activities_section = new TWAS_Views_ActivitiesSection({
-            appview: this, activities: this.activities
+            appview: this,
+            activities: this.activities
         });
+    },
+    alert: function(msg) {
+        console.log("ACHTUNG! " + msg);
     }
 });
 
@@ -62,14 +68,7 @@ var TWAS_Views_PrefsForm = Backbone.View.extend({
             key_id: this.prefs.get('key_id'),
             secret_key: this.prefs.get('secret_key')
         });
-        this.prefs.store(
-            function () {
-                $this.trigger('prefs:stored', $this.prefs);
-            },
-            function () {
-                console.error("PREFS STORE FAILED");
-            }
-        );
+        this.prefs.store();
         return false;
     },
 
@@ -144,10 +143,6 @@ var TWAS_Views_ActivityForm = Backbone.View.extend({
         this.activities = this.appview.activities;
     },
 
-    alert: function(msg) {
-        console.log("ACHTUNG! " + msg);
-    },
-
     editActivity: function (a) {
         this.activity = a;
         
@@ -179,11 +174,11 @@ var TWAS_Views_ActivityForm = Backbone.View.extend({
         };
         var options = {
             success: function (o, r) {
-                $this.alert("Activity saved");
+                $this.appview.alert("Activity saved");
                 $this.reset();
             },
             error: function (o, r) {
-                $this.alert("Error posting activity");
+                $this.appview.alert("Error posting activity");
             }
         };
         if (!this.activity) {
@@ -249,7 +244,7 @@ var TWAS_Views_ActivitiesSection = Backbone.View.extend({
     },
 
     activities_all: function (ev_name) {
-        // console.log("LIST EVENT", arguments);
+        console.log("LIST EVENT", arguments);
     },
 
     activities_add: function (activity) {
@@ -324,7 +319,7 @@ var TWAS_Views_Activity = Backbone.View.extend({
     },
 
     activity_all: function (ev_name) {
-        // console.log("ACT EV", arguments);
+        console.log("ACT EV", arguments);
     },
 
     activity_change: function (activity) {

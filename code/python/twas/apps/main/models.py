@@ -2,7 +2,8 @@ from datetime import datetime
 
 from django.db import models
 from couchdbkit.ext.django.schema import (Document, StringProperty,
-        IntegerProperty, DateTimeProperty, ListProperty, DictProperty)
+        IntegerProperty, BooleanProperty, DateTimeProperty, 
+        ListProperty, DictProperty)
 
 
 def id_from_args(cls, *args):
@@ -26,6 +27,7 @@ class FeedSubscription(Document):
     url = StringProperty()
     parents = ListProperty()
     last_fetch_time = IntegerProperty()
+    disabled = BooleanProperty()
     created = DateTimeProperty(default=datetime.utcnow)
 
     new_id = classmethod(id_from_args)
@@ -36,5 +38,6 @@ class HttpResource(Document):
     headers = DictProperty()
     last_fetch_time = IntegerProperty()
     last_error = StringProperty()
+    history = ListProperty()
 
     new_id = classmethod(id_from_args)

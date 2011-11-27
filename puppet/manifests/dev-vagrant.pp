@@ -35,6 +35,33 @@ class dev_tools {
     }
 }
 
+# Kindlegen, for making mobi's
+# See also: http://www.amazon.com/gp/feature.html?ie=UTF8&docId=1000234621
+# Terms of use: http://www.amazon.com/gp/feature.html?docId=1000599251
+class kindlegen {
+    exec { "kindlegen_download":
+        cwd => "/vagrant/puppet/cache",
+        command => "/usr/bin/wget http://s3.amazonaws.com/kindlegen/kindlegen_linux_2.6_i386_v1.2.tar.gz",
+        creates => "/vagrant/puppet/cache/kindlegen_linux_2.6_i386_v1.2.tar.gz"
+    }
+    file { "/opt/kindlegen":
+        require => Exec["kindlegen_download"],
+        ensure => directory,
+        owner => "vagrant", group => "vagrant", mode => 0777;
+    }
+    exec { "kindlegen_extract":
+        require => File["/opt/kindlegen"],
+        cwd => "/opt/kindlegen",
+        command => "/bin/tar -zxf /vagrant/puppet/cache/kindlegen_linux_2.6_i386_v1.2.tar.gz",
+        creates => "/opt/kindlegen/kindlegen"
+    }
+    file { "/usr/local/bin/kindlegen":
+        require => Exec["kindlegen_extract"],
+        target => "/opt/kindlegen/kindlegen",
+        ensure => link
+    }
+}
+
 # Couch 1.1.0, installed from an unofficial source
 # see: https://launchpad.net/~ericdrex/+archive/couchdb
 class couchdb {
@@ -76,6 +103,7 @@ class dev {
         vagrant_hacks:;
         repos: require => Class[vagrant_hacks];
         dev_tools: require => Class[repos];
+        kindlegen: require => Class[dev_tools];
         couchdb: require => Class[dev_tools];
         python_packages: require => Class[dev_tools];
     }

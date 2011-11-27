@@ -18,6 +18,7 @@ var Play = ({
     QUEUE_CONCURRENCY: 32,
     BUFFER_SIZE: 100 * 1024,
     FETCH_MAX_AGE: 1 * 60 * 60 * 1000,
+    MAX_ERRORS: 3,
     FEEDSUBSCRIPTION_BY_PROFILE_ID_VIEW:
         'main/FeedSubscription-by-profile-id',
 
@@ -29,14 +30,15 @@ var Play = ({
         $this.logger = new (winston.Logger)({
             transports: [
                 new (winston.transports.Console)({
-                    //level: 'info',
+                    // level: 'info',
                     level: 'debug',
                     colorize: true 
                 })
             ]
         });
-        $this.logger.cli();
-        $this.logger.setLevels(winston.config.syslog.levels);
+        $this.logger
+            .cli()
+            .setLevels(winston.config.syslog.levels);
 
         $this.fetch_queue = async.queue(
             _.bind($this.fetchOneFeed, $this), 
@@ -51,7 +53,9 @@ var Play = ({
                 $this.logger.info(results.length + ' subscriptions fetched.');
                 for (var i=0,result; result=results[i]; i++) {
                     var sub = result.value;
-                    $this.fetch_queue.push(sub);
+                    if (sub.url && !sub.disabled) {
+                        $this.fetch_queue.push(sub);
+                    }
                 }
             });
 
@@ -70,11 +74,12 @@ var Play = ({
             // Ensure resource data, creating it from defaults if necessary.
             hr = _.extend({
                 _id: hr_doc_id,
+                _rev: null,
                 doc_type: hr_doc_type,
                 url: sub.url,
                 headers: {},
                 last_error: null,
-                last_fetch_time: 0
+                status_history: []
             }, hr || {});
 
             // Check whether this resource was fetched too recently to 
@@ -84,7 +89,6 @@ var Play = ({
                 // $this.logger.debug("SKIP " + sub.url);
                 return next();
             }
-            hr.last_fetch_time = now;
             sub.last_fetch_time = now;
 
             // Set up request headers for conditional GET, if the right
@@ -122,24 +126,42 @@ var Play = ({
                 res.on('end', function () {
                     $this.logger.info("("+res.statusCode+") GET " + sub.url);
 
+                    var content = null;
+
+                    if (200 == res.statusCode) {
+                        hr.status = res.statusCode;
+                        hr.headers = res.headers;
+                        hr.last_error = null;
+                        content = Buffer.concat(chunks);
+                    }
+
+                    if (301 == res.statusCode) {
+                        // On a 301 Moved, change the subscription URL and
+                        // queue another fetch after updating DB records.
+                        if (hr.headers['location'] && sub.url != hr.headers['location']) {
+                            sub.url = hr.headers['location'];
+                            var old_next = next;
+                            next = function () {
+                                $this.fetch_queue.push(sub);
+                                old_next();
+                            };
+                            $this.logger.debug("REQUEUE " + sub.url);
+                        }
+                    }
+                    
+                    // TODO: Handle 302 temporary redirects.
+                    if (302 == res.statusCode) {
+                        hr.last_error = null;
+                    }
+
                     if (304 == res.statusCode) {
                         // Skip other updates for 304.
                         hr.last_error = null;
-                        return $this.updateRecords(sub, hr, null, next);
                     }
 
-                    hr.status = res.statusCode;
-                    hr.headers = res.headers;
+                    // TODO: Disable feeds with 4xx and 5xx
 
-                    if (200 == res.statusCode) {
-                        hr.last_error = null;
-                        var content = Buffer.concat(chunks);
-                        return $this.updateRecords(sub, hr, content, next);
-                    }
-
-                    // TODO: Handle 3xx redirects.
-
-                    return $this.updateRecords(sub, hr, null, next);
+                    return $this.updateRecords(sub, hr, content, next);
                 });
 
             });
@@ -147,6 +169,7 @@ var Play = ({
             // Register error handler for HTTP GET request.
             req.on('error', function (e) {
                 $this.logger.error("ERROR "+sub.url+" "+e.code+" "+e);
+                hr.status = 999;
                 hr.last_error = ''+e;
                 return $this.updateRecords(sub, hr, null, next);
             });
@@ -161,6 +184,26 @@ var Play = ({
     // record after the HTTP request.
     updateRecords: function (sub, hr, content, next) {
         var $this = this;
+
+        // Rotate the status history for this resource
+        var h = hr.status_history;
+        h.push(hr.status);
+        if (h.length > 10) { h.shift(); }
+
+        // Count recent consecutive errors 
+        var ct = 0;
+        for (var i=h.length-1; i>=0; i--) {
+            if (h[i] >= 400) { ct++; }
+            else { break; }
+        }
+
+        // Update the resource and disable sub if too many errors
+        hr.status_history = h;
+        if (ct > $this.MAX_ERRORS) {
+            $this.logger.error("TOO MANY ERRORS, DISABLING " + sub.url);
+            sub.disabled = true;
+        }
+
         async.waterfall([
             function (wf_next) {
                 // First, update the subscription record.
@@ -169,13 +212,8 @@ var Play = ({
             },
             function (wf_next) {
                 // Second, update or create the resource record.
-                if (hr._rev) {
-                    $this.db.save(hr._id, hr._rev, hr,
-                        function (err, res) { wf_next(); });
-                } else {
-                    $this.db.save(hr._id, hr,
-                        function (err, res) { wf_next(); });
-                }
+                $this.db.save(hr._id, hr._rev, hr,
+                    function (err, res) { wf_next(); });
             },
             function (wf_next) {
                 // Third, if we have content for the resource, 

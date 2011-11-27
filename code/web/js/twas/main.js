@@ -11,28 +11,17 @@ var TWAS_main = {
             $this.setupModels();
             $this.setupViews();
             $this.setupFeeds();
+            $this.setupEvents();
         });
         return this;
     },
 
-    updateSync: function () {
-    },
-
+    // Set up data models.
     setupModels: function () {
         var $this = this;
 
         this.sync = new S3Sync({
             prefix: 'activities/'
-        });
-        _.each(['set', 'fetch'], function (n) {
-            $this.prefs.bind(n, function () {
-                $this.sync.setOptions({
-                    bucket: $this.prefs.bucket,
-                    key_id: $this.prefs.get('key_id'),
-                    secret_key: $this.prefs.get('secret_key'),
-                    prefix: 'activities/'
-                });
-            });
         });
 
         var sync_fn = this.sync.bind();
@@ -42,6 +31,7 @@ var TWAS_main = {
         this.activities = new ActivityCollection();
     },
 
+    // Set up application views.
     setupViews: function () {
         this.app_view = new TWAS_Views_App({
             prefs: this.prefs,
@@ -50,6 +40,7 @@ var TWAS_main = {
         window.app_view = this.app_view;
     },
 
+    // Set up feeds for static publishing.
     setupFeeds: function () {
         var $this = this;
 
@@ -88,26 +79,48 @@ var TWAS_main = {
         // Build all the static feed generators.
         this.feeds = _.map(feed_opts, function (o) {
             var feed = new cls[o.type](_.defaults(o, def_opts, $this.config));
-            _.each(['set', 'fetch'], function (n) {
-                $this.prefs.bind(n, function () {
-                    feed.setOptions({
-                        bucket: $this.prefs.bucket,
-                        key_id: $this.prefs.get('key_id'),
-                        secret_key: $this.prefs.get('secret_key'),
-                        prefix: ''
-                    });
-                });
-            });
             return feed;
         });
+    },
 
-        // Publish all feeds when an activity is added, changed, or destroyed.
+    // Set up events in reaction to prefs and model changes.
+    setupEvents: function () {
+        var $this = this;
+
+        // Update options whenever prefs are set or fetched
+        var uo = _.bind(this.updateOptions, this);
+        _.each(['set', 'fetch'], function (n) {
+            $this.prefs.bind(n, uo);
+        });
+
+        // Publish feeds whenever activities are added, changed, or destroyed
         var pf = _.bind(this.publishFeeds, this);
         _.each(['add', 'change', 'destroy'], function (n) {
             $this.activities.bind(n, pf);
         });
     },
+    
+    // Update options for model sync and feeds.
+    updateOptions: function () {
+        console.log("UPDATE OPTIONS");
+        var $this = this;
+        var opts = {
+            bucket: $this.prefs.bucket,
+            key_id: $this.prefs.get('key_id'),
+            secret_key: $this.prefs.get('secret_key'),
+            prefix: 'activities/'
+        };
+        this.sync.setOptions(_.defaults({
+            prefix: 'activities/'
+        }, opts));
+        _.each(this.feeds, function (feed) {
+            feed.setOptions(_.defaults({
+                prefix: ''
+            },opts));
+        });
+    },
 
+    // Publish static feeds.
     publishFeeds: function () {
         _.each(this.feeds, function (f) {
             f.publish();
