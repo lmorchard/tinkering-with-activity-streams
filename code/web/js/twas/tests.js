@@ -35,8 +35,10 @@ asyncTest("Exercise AES encrypted prefs", function () {
         function (next) {
             var prefs = new TWAS_Prefs(opts);
             prefs.authenticate(user, pass);
-            prefs.set('fullname', 'Test User');
-            prefs.set('location', 'Anytown, USA');
+            prefs.set({
+                fullname: 'Test User',
+                location: 'Anytown, USA'
+            });
             prefs.store(
                 function () {
                     next();

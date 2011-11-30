@@ -3,135 +3,208 @@
 //
 
 var TWAS_Views_App = Backbone.View.extend({
-    el: $('body#post-app'),
-    tagName: 'body',
+
     events: {
+        'click button.logout': 'logout',
+        'click button.destroyPrefs': 'destroyPrefs'
     },
+    
     initialize: function (options) {
+        this.el = options.el;
         this.prefs = options.prefs;
         this.activities = options.activities;
-        this.prefs_form = new TWAS_Views_PrefsForm({
-            appview: this,
-            prefs: this.prefs
+
+        this.setupViews();
+        this.setupEvents();
+
+        var credentials = localStorage.getItem('credentials');
+        if (credentials) {
+            this.login_form.onValid({
+                data: JSON.parse(credentials)
+            });
+        }
+    },
+
+    setupViews: function () {
+        this.el.removeClass('logged-in');
+        this.login_form = new TWAS_Views_LoginForm({
+            parent: this, el: this.$('form.login'),
+        });
+        this.register_form = new TWAS_Views_RegisterForm({
+            parent: this, el: this.$('form.register'),
         });
         this.activity_form = new TWAS_Views_ActivityForm({
-            appview: this,
-            activities: this.activities
+            parent: this, el: this.$('form.activity'),
         });
         this.activities_section = new TWAS_Views_ActivitiesSection({
-            appview: this,
-            activities: this.activities
+            parent: this, el: this.$('section.activities'),
         });
     },
+
+    setupEvents: function () {
+        var $this = this,
+            p = this.prefs,
+            login = _.bind(this.login, this);
+        _.each({
+            'fetch': login,
+            'store': login,
+            'error:fetch': function () {
+                $this.alert("Problem logging in!");
+                localStorage.removeItem('credentials');
+            },
+            'error:store': function () {
+                $this.alert("Problem registering!");
+            },
+            'error:destroy': function () {
+                $this.alert("Problem destroying account!");
+            }
+        }, function (cb, name) { 
+            $this.prefs.bind(name, cb); 
+        });
+    },
+
+    login: function () {
+        this.el.addClass('logged-in');
+        this.login_form.reset();
+        this.register_form.reset();
+    },
+
+    logout: function () {
+        this.el.removeClass('logged-in');
+        localStorage.removeItem('credentials');
+        this.prefs.reset();
+        return false;
+    },
+
+    destroyPrefs: function (ev) {
+        var $this = this;
+        if (!window.confirm("Destroy account? Are you sure?")) {
+            return false;
+        }
+        console.dir(this.prefs.data);
+        this.prefs.destroy(function () {
+            $this.logout();
+        });
+        return false;
+    },
+    
     alert: function(msg) {
+        window.alert(msg);
         console.log("ACHTUNG! " + msg);
     }
 });
 
-var TWAS_Views_PrefsForm = Backbone.View.extend({
-    el: $('form#prefs'),
-    
-    events: {
-        'submit': 'login',
-        'click button.login': 'login',
-        'click button.logout': 'logout',
-        'click button.save': 'save',
-        'click button.destroy': 'destroy'
-    },
-
-    auth_fields: ['bucket', 'username', 'password'],
-    prefs_fields: ['key_id', 'secret_key'],
-
+var TWAS_Views_Form = Backbone.View.extend({
     initialize: function (options) {
-        var $this = this;
-        this.prefs = options.prefs;
-        this.appview = options.appview;
-        _.each(this.auth_fields, function (n) {
-            $this[n] = localStorage.getItem(n);
-            $this.$('#prefs_'+n).val($this[n]);
-        });
-        this.login();
+        this.parent = options.parent;
+        this.prefs = options.parent.prefs;
     },
-
-    save: function (ev) {
-        var $this = this;
-        if (!(this.bucket && this.username && this.password)) {
-            return false;
-        }
-        _.each(this.prefs_fields, function (n) {
-            $this.prefs.set(n, $this.$('#prefs_'+n).val());
+    reset: function () {
+        this.el.find('*[name]').each(function (i, raw) {
+            $(raw).val('');
         });
+    },
+    validate: function () {
+        var $this = this;
+        var rv = {
+            is_valid: true,
+            errors: {},
+            data: {}
+        };
+        this.el.find('*[name]').each(function (i, raw) {
+            var field = $(raw),
+                parent = field.parent(),
+                name = field.attr('name'),
+                type = field.attr('type'),
+                value,
+                is_valid = true;
+            parent.removeClass('error');
+            if ('checkbox' == type) {
+                value = !!field.attr('checked');
+            } else {
+                value = field.val();
+            }
+            if (field.attr('required') && !value) {
+                is_valid = false;
+            }
+            if (field.attr('data-confirm')) {
+                var c_name = field.attr('data-confirm'),
+                    c_field = $this.el.find('*[name='+c_name+']'),
+                    c_value = c_field.val();
+                if (c_value !== value) {
+                    c_field.parent().addClass('error');
+                    is_valid = false;
+                }
+            }
+            if (!is_valid) {
+                rv.is_valid = false;
+                rv.errors[name] = true;
+                parent.addClass('error');
+            }
+            rv.data[name] = value;
+        });
+        return rv;
+    },
+    submit: function (ev) {
+        var rv = this.validate();
+        if (!rv.is_valid) {
+            return this.onError(rv);
+        } else {
+            return this.onValid(rv);
+        }
+    },
+    onError: function (rv) {
+        return false;
+    },
+    onValid: function (rv) {
+        return false;
+    }
+});
+
+var TWAS_Views_LoginForm = TWAS_Views_Form.extend({
+    events: {
+        'submit': 'submit',
+        'click button.login': 'submit'
+    },
+    onValid: function (rv) {
+        var data = rv.data;
+        if (data.remember) {
+            localStorage.setItem('credentials', JSON.stringify(data));
+        }
         this.prefs.setOptions({
-            bucket: this.bucket,
-            username: this.username,
-            password: this.password,
-            key_id: this.prefs.get('key_id'),
-            secret_key: this.prefs.get('secret_key')
+            bucket: data.bucket,
+            username: data.username,
+            password: data.password
+        });
+        this.prefs.fetch();
+        return false;
+    }
+});
+
+var TWAS_Views_RegisterForm = TWAS_Views_Form.extend({
+    events: {
+        'submit': 'submit',
+        'click button.register': 'submit'
+    },
+    onValid: function (rv) {
+        var data = rv.data;
+        this.prefs.setOptions({
+            bucket: data.bucket,
+            username: data.username,
+            password: data.password,
+            key_id: data.key_id,
+            secret_key: data.secret_key
+        });
+        this.prefs.set({
+            key_id: data.key_id,
+            secret_key: data.secret_key,
         });
         this.prefs.store();
         return false;
-    },
-
-    login: function () {
-        var $this = this;
-        _.each(this.auth_fields, function (n) {
-            $this[n] = $this.$('#prefs_'+n).val();
-            localStorage.setItem(n, $this[n]);
-        });
-        if (!(this.bucket && this.username && this.password)) {
-            return false;
-        }
-        this.prefs.setOptions({
-            bucket: this.bucket,
-            username: this.username,
-            password: this.password
-        });
-        this.prefs.fetch(
-            function () {
-                $this.prefs.setOptions({
-                    bucket: $this.bucket,
-                    key_id: $this.prefs.get('key_id'),
-                    secret_key: $this.prefs.get('secret_key')
-                });
-                _.each($this.prefs_fields, function (n) {
-                    $this.$('#prefs_'+n).val($this.prefs.get(n));
-                });
-                $this.trigger('prefs:fetched', $this.prefs);
-            },
-            function () {
-                console.error("PREFS FETCH FAILED");
-            }
-        );
-        return false;
-    },
-
-    logout: function () {
-        var $this = this;
-        var clear_fn = function (n) {
-            $this[n] = null;
-            localStorage.removeItem(n);
-            $this.$('#prefs_'+n).val("");
-        }
-        _.each(this.auth_fields, clear_fn);
-        _.each(this.prefs_fields, clear_fn);
-        return false;
-    },
-
-    destroy: function (ev) {
-        var $this = this;
-        if (!this.prefs) { return false; }
-        _.each(this.prefs_fields, function (n) {
-            $this.$('#prefs_'+n).val('');
-        });
-        this.prefs.destroy();
-        return false;
     }
-    
 });
 
 var TWAS_Views_ActivityForm = Backbone.View.extend({
-    el: $('form#activity'),
-    
     events: {
         'submit': 'commit',
         'click button.post': 'commit',
@@ -139,8 +212,9 @@ var TWAS_Views_ActivityForm = Backbone.View.extend({
     },
     
     initialize: function (options) {
-        this.appview = options.appview;
-        this.activities = this.appview.activities;
+        this.el = options.el;
+        this.parent = options.parent;
+        this.activities = this.parent.activities;
     },
 
     editActivity: function (a) {
@@ -174,11 +248,10 @@ var TWAS_Views_ActivityForm = Backbone.View.extend({
         };
         var options = {
             success: function (o, r) {
-                $this.appview.alert("Activity saved");
                 $this.reset();
             },
             error: function (o, r) {
-                $this.appview.alert("Error posting activity");
+                $this.parent.alert("Error posting activity");
             }
         };
         if (!this.activity) {
@@ -203,9 +276,6 @@ var TWAS_Views_ActivityForm = Backbone.View.extend({
 });
 
 var TWAS_Views_ActivitiesSection = Backbone.View.extend({
-    el: $('section#activities'),
-    tagName: 'section',
-    
     events: {
         'click button.refresh': 'refresh'
     },
@@ -213,14 +283,10 @@ var TWAS_Views_ActivitiesSection = Backbone.View.extend({
     initialize: function (options) {
         var $this = this;
 
-        this.appview = options.appview;
-        this.activities = this.appview.activities;
+        this.el = options.el;
+        this.parent = options.parent;
+        this.activities = this.parent.activities;
 
-        _.each(['set', 'fetch'], function (n) {
-            $this.appview.prefs.bind(n, function () {
-                $this.refresh();
-            });
-        });
         _.each(['all', 'reset', 'add'], function (name) {
             $this.activities.bind(name,
                 _($this['activities_'+name]).bind($this));
@@ -262,8 +328,6 @@ var TWAS_Views_ActivitiesSection = Backbone.View.extend({
 });
 
 var TWAS_Views_Activity = Backbone.View.extend({
-    tagName: 'li',
-
     events: {
         'click .edit': 'edit',
         'click .delete': 'destroy'
@@ -308,7 +372,7 @@ var TWAS_Views_Activity = Backbone.View.extend({
     },
 
     edit: function () {
-        var form = this.parent.appview.activity_form;
+        var form = this.parent.parent.activity_form;
         form.editActivity(this.activity);
         return false;
     },

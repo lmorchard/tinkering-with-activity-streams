@@ -34,6 +34,7 @@ var TWAS_main = {
     // Set up application views.
     setupViews: function () {
         this.app_view = new TWAS_Views_App({
+            el: $('#post-app'),
             prefs: this.prefs,
             activities: this.activities
         });
@@ -89,7 +90,7 @@ var TWAS_main = {
 
         // Update options whenever prefs are set or fetched
         var uo = _.bind(this.updateOptions, this);
-        _.each(['set', 'fetch'], function (n) {
+        _.each(['set', 'store', 'fetch'], function (n) {
             $this.prefs.bind(n, uo);
         });
 
@@ -102,7 +103,6 @@ var TWAS_main = {
     
     // Update options for model sync and feeds.
     updateOptions: function () {
-        console.log("UPDATE OPTIONS");
         var $this = this;
         var opts = {
             bucket: $this.prefs.bucket,
@@ -118,6 +118,7 @@ var TWAS_main = {
                 prefix: ''
             },opts));
         });
+        this.app_view.activities_section.refresh();
     },
 
     // Publish static feeds.

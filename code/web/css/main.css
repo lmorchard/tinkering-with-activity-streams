@@ -1,7 +1,34 @@
 .templates { display: none; }
-#activity { width: 33%; float: left; margin: 0.25em 0.5em; }
-#activities { margin: 0.25em 0.5em 0.25em 35%; padding: 0.125em 0.25em; }
-#activities .stream { list-style: none; margin: 0; padding: 0; }
-li.activity { margin: 1em 0; }
-li.activity .object p.content { margin: 0.5em 1.25em; padding: 0; }
 
+form { }
+form fieldset { }
+form fieldset ul { list-style: none; margin: 0.25em 0.5em; padding: 0; }
+form fieldset ul li { margin: 0.25em 0.25em; padding: 0; }
+form fieldset ul li label { width: 18ex; margin: 0 0.5em 0 0; float: left; text-align: right; }
+form fieldset ul li input { width: 35ex; }
+form fieldset ul li textarea { width: 45ex; }
+form fieldset ul li.error { background: #fdd; }
+
+#post-app .main { display: none; }
+
+#post-app.logged-in .login { display: none; }
+#post-app.logged-in .register { display: none; }
+#post-app.logged-in .main { display: block; }
+
+#post-app .activity { }
+#post-app .activities { }
+#post-app .activities .stream { list-style: none; margin: 0; padding: 0; }
+#post-app .activities .stream li.activity { margin: 1em 0; }
+#post-app .activities .stream li.activity .object p.content { margin: 0.5em 1.25em; padding: 0; }
+
+@media screen and (min-device-width : 320px) and (max-device-width : 800px) {
+    #post-app { margin: 5px 10px; }
+    #post-app h1 { font-size: 125%; }
+    form fieldset ul li label { width: 100%; display: block; float: none; text-align: left; }
+    form fieldset ul li input { width: 100%; }
+    form fieldset ul li textarea { width: 100%; }
+}
+
+@media screen and (min-width: 960px) {
+    #post-app { width: 950px; margin: 0 auto; }
+}

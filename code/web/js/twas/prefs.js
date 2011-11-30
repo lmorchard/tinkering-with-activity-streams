@@ -9,7 +9,7 @@ _.extend(TWAS_Prefs.prototype, Backbone.Events, {
 
     init: function (options) {
         this.setOptions(options);
-        this.data = {};
+        this.reset();
     },
 
     setOptions: function (options) {
@@ -25,10 +25,14 @@ _.extend(TWAS_Prefs.prototype, Backbone.Events, {
         this.password = password;
         this.trigger('authenticate', username, password);
     },
+
+    reset: function () {
+        this.data = {};
+    },
     
-    set: function (key, value) {
-        this.data[key] = value;
-        this.trigger('set', this, key, value);
+    set: function (o) {
+        _.extend(this.data, o);
+        this.trigger('set', this, o);
     },
     
     get: function (key, def) {
@@ -54,7 +58,10 @@ _.extend(TWAS_Prefs.prototype, Backbone.Events, {
                 $this.trigger('store', $this);
                 success()
             }, 
-            error
+            function () {
+                if (error) { error($this); }
+                $this.trigger('error:store', $this);
+            }
         );
     },
     
@@ -64,19 +71,25 @@ _.extend(TWAS_Prefs.prototype, Backbone.Events, {
         this.s3.get(
             this.bucket, key,
             function (resp, obj) {
-                var content = GibberishAES.dec(
-                    resp.responseText,
-                    $this.password
-                );
                 try {
+                    var content = GibberishAES.dec(
+                        resp.responseText,
+                        $this.password
+                    );
                     $this.data = JSON.parse(content);
+                    $this.key_id = $this.get('key_id');
+                    $this.secret_key = $this.get('secret_key');
+                    $this.trigger('fetch', $this);
+                    if (success) { success($this.data); }
                 } catch (e) {
                     $this.data = {};
+                    $this.trigger('error:fetch', $this);
                 }
-                $this.trigger('fetch', $this);
-                success($this.data);
             },
-            error
+            function () {
+                if (error) { error($this); }
+                $this.trigger('error:fetch', $this);
+            }
         );
     },
 
@@ -87,9 +100,12 @@ _.extend(TWAS_Prefs.prototype, Backbone.Events, {
             this.bucket, key,
             function () {
                 $this.trigger('destroy', this);
-                success();
+                if (success) { success(); }
             }, 
-            error
+            function () {
+                if (error) { error($this); }
+                $this.trigger('error:destroy', $this);
+            }
         );
     }
 
