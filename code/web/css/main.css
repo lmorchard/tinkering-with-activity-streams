@@ -1,4 +1,4 @@
-.templates { display: none; }
+.hidden { display: none; }
 
 form { }
 form fieldset { }
@@ -9,11 +9,12 @@ form fieldset ul li input { width: 35ex; }
 form fieldset ul li textarea { width: 45ex; }
 form fieldset ul li.error { background: #fdd; }
 
-#post-app .main { display: none; }
+#post-app .pre-login { display: block; }
+#post-app .needs-login { display: none; }
 
-#post-app.logged-in .login { display: none; }
-#post-app.logged-in .register { display: none; }
-#post-app.logged-in .main { display: block; }
+#post-app.logged-in .pre-login { display: none; }
+#post-app.logged-in .needs-login { display: block; }
+#post-app.logged-in .hidden { display: none }
 
 #post-app .activity { }
 #post-app .activities { }
@@ -21,14 +22,16 @@ form fieldset ul li.error { background: #fdd; }
 #post-app .activities .stream li.activity { margin: 1em 0; }
 #post-app .activities .stream li.activity .object p.content { margin: 0.5em 1.25em; padding: 0; }
 
+
 @media screen and (min-device-width : 320px) and (max-device-width : 800px) {
-    #post-app { margin: 5px 10px; }
-    #post-app h1 { font-size: 125%; }
+    #main { margin: 5px 10px; }
+    #main h1 { font-size: 125%; }
     form fieldset ul li label { width: 100%; display: block; float: none; text-align: left; }
     form fieldset ul li input { width: 100%; }
     form fieldset ul li textarea { width: 100%; }
 }
 
 @media screen and (min-width: 960px) {
-    #post-app { width: 950px; margin: 0 auto; }
+    #main { width: 800px; margin: 0 auto; }
 }
+

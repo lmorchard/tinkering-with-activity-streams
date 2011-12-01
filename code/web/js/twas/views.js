@@ -6,6 +6,7 @@ var TWAS_Views_App = Backbone.View.extend({
 
     events: {
         'click button.logout': 'logout',
+        'click button.editPrefs': 'editPrefs',
         'click button.destroyPrefs': 'destroyPrefs'
     },
     
@@ -33,6 +34,9 @@ var TWAS_Views_App = Backbone.View.extend({
         this.register_form = new TWAS_Views_RegisterForm({
             parent: this, el: this.$('form.register'),
         });
+        this.prefs_form = new TWAS_Views_PrefsForm({
+            parent: this, el: this.$('form.prefs'),
+        });
         this.activity_form = new TWAS_Views_ActivityForm({
             parent: this, el: this.$('form.activity'),
         });
@@ -53,7 +57,7 @@ var TWAS_Views_App = Backbone.View.extend({
                 localStorage.removeItem('credentials');
             },
             'error:store': function () {
-                $this.alert("Problem registering!");
+                $this.alert("Problem storing prefs!");
             },
             'error:destroy': function () {
                 $this.alert("Problem destroying account!");
@@ -64,7 +68,15 @@ var TWAS_Views_App = Backbone.View.extend({
     },
 
     login: function () {
+        var $this = this;
         this.el.addClass('logged-in');
+        try {
+        this.$('ul.urls li a').each(function (i, raw) {
+            var el = $(raw),
+                href = '/'+$this.prefs.bucket+'/'+el.attr('data-url');
+            el.attr('href', href);
+        });
+    } catch (e) { console.error(e); }
         this.login_form.reset();
         this.register_form.reset();
     },
@@ -73,6 +85,11 @@ var TWAS_Views_App = Backbone.View.extend({
         this.el.removeClass('logged-in');
         localStorage.removeItem('credentials');
         this.prefs.reset();
+        return false;
+    },
+
+    editPrefs: function () {
+        this.$('form.prefs').toggleClass('hidden');
         return false;
     },
 
@@ -102,6 +119,16 @@ var TWAS_Views_Form = Backbone.View.extend({
     reset: function () {
         this.el.find('*[name]').each(function (i, raw) {
             $(raw).val('');
+        });
+    },
+    populate: function (data) {
+        this.el.find('*[name]').each(function (i, raw) {
+            var field = $(raw),
+                name = field.attr('name'),
+                type = field.attr('type');
+            if (name in data) {
+                field.val(data[name]);
+            }
         });
     },
     validate: function () {
@@ -198,13 +225,54 @@ var TWAS_Views_RegisterForm = TWAS_Views_Form.extend({
         this.prefs.set({
             key_id: data.key_id,
             secret_key: data.secret_key,
+            displayName: data.displayName,
+            email: data.email,
+            url: data.url,
+            summary: data.summary
         });
         this.prefs.store();
         return false;
     }
 });
 
+var TWAS_Views_PrefsForm = TWAS_Views_Form.extend({
+    events: {
+        'submit': 'submit',
+        'click button.save': 'submit',
+        'click button.cancel': 'cancel'
+    },
+    initialize: function (options) {
+        TWAS_Views_Form.prototype.initialize.call(this, options);
+        var $this = this;
+        var update_self = function () {
+            $this.populate($this.prefs.data);
+        }
+        _.each(['store', 'fetch', 'set'], function (name) {
+            $this.prefs.bind(name, update_self);
+        });
+    },
+    cancel: function () {
+        this.el.addClass('hidden');
+        return false;
+    },
+    onValid: function (rv) {
+        var $this = this,
+            data = rv.data;
+        this.el.addClass('loading');
+        this.prefs.set(data);
+        this.prefs.store(function () {
+            $this.el
+                .removeClass('loading')
+                .addClass('hidden');
+        });
+        return false;
+    }
+});
+
 var TWAS_Views_ActivityForm = Backbone.View.extend({
+    GRAVATAR_BASE: 'http://www.gravatar.com/avatar/',
+    GRAVATAR_SIZE: 80,
+
     events: {
         'submit': 'commit',
         'click button.post': 'commit',
@@ -231,13 +299,25 @@ var TWAS_Views_ActivityForm = Backbone.View.extend({
         this.$('#object_displayName').val(object.displayName);
         this.$('#object_content').val(object.content);
     },
+
+    gravatarUrl: function (email, size) {
+        size = size || this.GRAVATAR_SIZE;
+        return this.GRAVATAR_BASE + hex_md5(email) + '?s=' + size;
+    },
     
     commit: function () {
+        try {
         var $this = this;
         var data = {
             actor: {
-                url: this.$('#actor_url').val(),
-                displayName: this.$('#actor_displayName').val()
+                displayName: this.parent.prefs.get('displayName'),
+                url: this.parent.prefs.get('url'),
+                summary: this.parent.prefs.get('summary'),
+                image: {
+                    url: this.gravatarUrl(this.parent.prefs.get('email')),
+                    width: this.GRAVATAR_SIZE,
+                    height: this.GRAVATAR_SIZE
+                }
             },
             verb: this.$('#verb').val(),
             object: {
@@ -259,6 +339,7 @@ var TWAS_Views_ActivityForm = Backbone.View.extend({
         } else {
             this.activity.save(data, options);
         }
+    } catch (e) { console.error(e); }
         return false;
     },
 
@@ -361,12 +442,20 @@ var TWAS_Views_Activity = Backbone.View.extend({
         var o = a.get('object');
         this.$('.object')
             .find('.displayName')
-                .attr('href', a.url())
+                .attr('href', '/' + this.parent.parent.prefs.bucket + '/' + a.url())
                 .text(o.displayName)
             .end()
             .find('.content')
                 .html(o.content)
             .end();
+
+        var i = a.get('actor').image;
+        if (i) {
+            this.$('.image')
+                .attr('src', i.url)
+                .attr('width', i.width)
+                .attr('height', i.height);
+        }
 
         return this;
     },

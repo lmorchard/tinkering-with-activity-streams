@@ -77,8 +77,10 @@ _.extend(TWAS_Prefs.prototype, Backbone.Events, {
                         $this.password
                     );
                     $this.data = JSON.parse(content);
-                    $this.key_id = $this.get('key_id');
-                    $this.secret_key = $this.get('secret_key');
+                    $this.setOptions({
+                        key_id: $this.get('key_id'),
+                        secret_key: $this.get('secret_key')
+                    });
                     $this.trigger('fetch', $this);
                     if (success) { success($this.data); }
                 } catch (e) {
