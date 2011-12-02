@@ -8,12 +8,35 @@ var TWAS_main = {
         var $this = this;
         this.prefs = new TWAS_Prefs();
         $(document).ready(function () {
+            $this.renderMarkdown();
             $this.setupModels();
             $this.setupViews();
             $this.setupFeeds();
             $this.setupEvents();
         });
+
         return this;
+    },
+
+    renderMarkdown: function () {
+        var md = new Showdown.converter();
+        $('script[type=markdown]').each(function (i, node) {
+            // Grab the source node and contents split into lines.
+            var el = $(node),
+                src = el.text().split("\n");
+            // Discard all leading empty lines.
+            while (!src[0]) { src.shift(); }
+            // Decide indentation level from the first line, unindent all
+            // lines, rejoin.
+            var indent_idx = /^\s+/.exec(src[0])[0].length;
+            var md_src = src.map(function (l) {
+                return l.substr(indent_idx);
+            }).join("\n");
+            // Process the markdown into HTML and replace the source element.
+            var html_out = md.makeHtml(md_src);
+            var new_el = $('<div/>').html(html_out);
+            el.before(new_el).remove();
+        });
     },
 
     // Set up data models.
